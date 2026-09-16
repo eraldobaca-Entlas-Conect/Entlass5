@@ -1,0 +1,5 @@
+{% extends "base.html" %}{% block content %}
+<main class="login"><section class="hero"><div class="pill">PATIENTENTRANSPORTE DIGITAL ORGANISIEREN</div><h1>Entlassung → Transport → Krankenkasse</h1><p>Eine Plattform für Krankenhäuser, Pflegeeinrichtungen, Patiententransportdienste, Dispatcher und Fahrer.</p><div class="features"><span>✓ Liege</span><span>✓ Rollstuhl</span><span>✓ Sitzend</span><span>✓ GPS & Tracking</span><span>✓ Automatische Rechnung</span></div></section>
+<form class="card loginbox" method="post"><h2>Anmelden</h2>{% if error %}<div class="alert">{{error}}</div>{% endif %}
+<label>Benutzername<input name="username" required></label><label>Passwort<input name="password" type="password" required></label><button>Einloggen →</button>
+<p class="hint">Demo: station / station123 · dispatcher / dispatch123 · admin / admin123 · fahrer1 / fahrer123</p></form></main>{% endblock %}
