@@ -354,7 +354,6 @@ def new_order():
                    data["pickup"],data["destination"],data["transport_type"],data["date"],data["pickup_time"],
                    data.get("payer",""),data.get("insurance_no",""),data.get("approval","unknown"),
                    data.get("reason",""),data.get("notes",""),"NEW",session["user_id"],now,token,
-                   0,
                    data.get("direction","hinfahrt"),data.get("treatment_facility",""),
                    float(data.get("distance_km") or 12.4), 0))
         oid=c.execute("SELECT last_insert_rowid() id").fetchone()["id"]
