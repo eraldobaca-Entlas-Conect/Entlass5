@@ -349,13 +349,13 @@ def new_order():
         c.execute("""INSERT INTO orders(order_no,patient_name,patient_ref,pickup,destination,transport_type,date,pickup_time,
                      payer,insurance_no,approval,reason,notes,status,created_by,created_at,tracking_token,price_cents,
                      direction,treatment_facility,distance_km,copay_cents)
-                     VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                     VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                   (f"AU{datetime.now():%y%m%d%H%M%S}",data.get("patient_name",""),data.get("patient_ref",""),
                    data["pickup"],data["destination"],data["transport_type"],data["date"],data["pickup_time"],
                    data.get("payer",""),data.get("insurance_no",""),data.get("approval","unknown"),
                    data.get("reason",""),data.get("notes",""),"NEW",session["user_id"],now,token,
-                   data.get("direction","hinfahrt"),data.get("treatment_facility",""),
-                   float(data.get("distance_km") or 12.4), 0))
+                   0,data.get("direction","hinfahrt"),data.get("treatment_facility",""),
+                   float(data.get("distance_km") or 12.4),0))
         oid=c.execute("SELECT last_insert_rowid() id").fetchone()["id"]
         c.execute("INSERT INTO events(order_id,status,note,created_at) VALUES(?,?,?,?)",(oid,"NEW","Auftrag erstellt",now))
         c.commit(); c.close()
