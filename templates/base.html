@@ -1,6 +1,60 @@
-<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>{{ title or "ENTLASS-CONNECT" }}</title><link rel="stylesheet" href="{{ url_for('static',filename='style.css') }}"><link rel="stylesheet" href="{{ url_for('static',filename='design.css') }}"></head><body class="{% if session_user %}authenticated{% endif %}">
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>{{ title or "ENTLASS-CONNECT" }}</title>
+  <link rel="stylesheet" href="{{ url_for('static',filename='style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static',filename='design.css') }}">
+</head>
+<body class="{% if session_user %}authenticated{% endif %}">
 {% if session_user %}
-<header class="top"><a class="brand" href="{{ url_for('driver') if session_role=='driver' else url_for('dashboard') }}"><img src="{{ url_for('static',filename='img/logo.jpeg') }}" alt="ENTLASS-CONNECT"><span><b>ENTLASS</b><strong>CONNECT</strong><small>DIGITAL. SICHER. GEMEINSAM.</small></span></a><div class="userbar"><span class="userrole">{{ session_user }} · {{ session_role|capitalize }}</span><a class="logout" href="{{ url_for('logout') }}">Abmelden</a></div></header>
-<div class="app-shell"><aside class="app-sidebar"><a class="side-brand" href="{{ url_for('driver') if session_role=='driver' else url_for('dashboard') }}"><img src="{{ url_for('static',filename='img/logo.jpeg') }}"><span><b>ENTLASS</b><strong>CONNECT</strong><small>SICHER · PÜNKTLICH · MENSCHLICH</small></span></a><nav class="side-nav">
-<a href="{{url_for('dashboard')}}"><span class="ico">⌂</span>Dashboard</a><a href="{{url_for('new_order')}}"><span class="ico">＋</span>Aufträge</a><a href="{{url_for('dashboard')}}#tracking"><span class="ico">⌖</span>Live-Tracking</a>{% if session_role=='driver' %}<a href="{{url_for('driver')}}"><span class="ico">♟</span>Fahrer</a>{% else %}<a href="{{url_for('dashboard')}}#fahrer"><span class="ico">♟</span>Fahrer</a><a href="{{url_for('dashboard')}}#disposition"><span class="ico">◈</span>Disposition</a><a href="{{url_for('dashboard')}}#alarme"><span class="ico">⚠</span>Alarm Center</a>{% endif %}<a href="{{url_for('dashboard')}}#rechnungen"><span class="ico">▣</span>Rechnungen</a>{% if session_role!='driver' %}<a href="{{url_for('dashboard')}}#krankenhaeuser"><span class="ico">⌂</span>Krankenhäuser</a><a href="{{url_for('dashboard')}}#kostentraeger"><span class="ico">▤</span>Kostenträger</a>{% endif %}<a href="{{url_for('reports')}}"><span class="ico">▥</span>Berichte</a><a href="{{url_for('dashboard')}}#settings"><span class="ico">⚙</span>Einstellungen</a></nav><div class="side-bottom"><a href="{{url_for('logout')}}"><span class="ico">↪</span> Abmelden</a></div></aside><div class="app-main"><div class="app-topbar"><div class="search">⌕ &nbsp; Suche...</div><div class="meta"><span>🔔</span><span>{{ session_user }}</span><span class="avatar">{{ session_user[:1]|upper }}</span></div></div><div class="app-content">{% block content %}{% endblock %}</div></div></div>
-{% else %}{% block content %}{% endblock %}{% endif %}</body></html>
+<header class="top">
+  <a class="brand" href="{{ url_for('driver') if session_role=='driver' else url_for('dashboard') }}">
+    <img src="{{ url_for('static',filename='img/logo.jpeg') }}" alt="ENTLASS-CONNECT">
+    <span><b>ENTLASS</b><strong>CONNECT</strong><small>DIGITAL. SICHER. GEMEINSAM.</small></span>
+  </a>
+  <div class="userbar"><span class="userrole">{{ session_user }} · {{ session_role|capitalize }}</span><a class="logout" href="{{ url_for('logout') }}">Abmelden</a></div>
+</header>
+<div class="app-shell">
+  <aside class="app-sidebar">
+    <a class="side-brand" href="{{ url_for('driver') if session_role=='driver' else url_for('dashboard') }}"><img src="{{ url_for('static',filename='img/logo.jpeg') }}"><span><b>ENTLASS</b><strong>CONNECT</strong><small>SICHER · PÜNKTLICH · MENSCHLICH</small></span></a>
+    <nav class="side-nav">
+      <a href="{{url_for('dashboard')}}"><span class="ico">⌂</span>Dashboard</a>
+      <a href="{{url_for('new_order')}}"><span class="ico">＋</span>Aufträge</a>
+      <a href="{{url_for('dashboard')}}#tracking"><span class="ico">⌖</span>Live-Tracking</a>
+      {% if session_role=='driver' %}
+      <a href="{{url_for('driver')}}"><span class="ico">♟</span>Fahrer</a>
+      {% else %}
+      <a href="{{url_for('dashboard')}}#fahrer"><span class="ico">♟</span>Fahrer</a>
+      <a href="{{url_for('dashboard')}}#disposition"><span class="ico">◈</span>Disposition</a>
+      <a href="{{url_for('dashboard')}}#alarme"><span class="ico">⚠</span>Alarm Center</a>
+      {% endif %}
+      <a href="{{url_for('dashboard')}}#rechnungen"><span class="ico">▣</span>Rechnungen</a>
+      {% if session_role!='driver' %}
+      <a href="{{url_for('dashboard')}}#krankenhaeuser"><span class="ico">⌂</span>Krankenhäuser</a>
+      <a href="{{url_for('dashboard')}}#kostentraeger"><span class="ico">▤</span>Kostenträger</a>
+      {% endif %}
+      <a href="{{url_for('reports')}}"><span class="ico">▥</span>Berichte</a>
+      <a href="{{url_for('dashboard')}}#settings"><span class="ico">⚙</span>Einstellungen</a>
+    </nav>
+    <div class="side-bottom"><a href="{{url_for('logout')}}"><span class="ico">↪</span> Abmelden</a></div>
+  </aside>
+  <div class="app-main">
+    <div class="app-topbar"><div class="search">⌕ &nbsp; Suche...</div><div class="meta"><span>🔔</span><span>{{ session_user }}</span><span class="avatar">{{ session_user[:1]|upper }}</span></div></div>
+    <div class="app-content">
+{% else %}
+<div class="public-page">
+{% endif %}
+
+{% block content %}{% endblock %}
+
+{% if session_user %}
+    </div>
+  </div>
+</div>
+{% else %}
+</div>
+{% endif %}
+</body>
+</html>
