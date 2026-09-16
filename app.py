@@ -349,7 +349,7 @@ def new_order():
         c.execute("""INSERT INTO orders(order_no,patient_name,patient_ref,pickup,destination,transport_type,date,pickup_time,
                      payer,insurance_no,approval,reason,notes,status,created_by,created_at,tracking_token,price_cents,
                      direction,treatment_facility,distance_km,copay_cents)
-                     VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                     VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                   (f"AU{datetime.now():%y%m%d%H%M%S}",data.get("patient_name",""),data.get("patient_ref",""),
                    data["pickup"],data["destination"],data["transport_type"],data["date"],data["pickup_time"],
                    data.get("payer",""),data.get("insurance_no",""),data.get("approval","unknown"),
