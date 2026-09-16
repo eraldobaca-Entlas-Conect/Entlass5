@@ -349,17 +349,37 @@ def new_order():
         c.execute("""INSERT INTO orders(order_no,patient_name,patient_ref,pickup,destination,transport_type,date,pickup_time,
                      payer,insurance_no,approval,reason,notes,status,created_by,created_at,tracking_token,price_cents,
                      direction,treatment_facility,distance_km,copay_cents)
-                     VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                     VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                   (f"AU{datetime.now():%y%m%d%H%M%S}",data.get("patient_name",""),data.get("patient_ref",""),
                    data["pickup"],data["destination"],data["transport_type"],data["date"],data["pickup_time"],
                    data.get("payer",""),data.get("insurance_no",""),data.get("approval","unknown"),
                    data.get("reason",""),data.get("notes",""),"NEW",session["user_id"],now,token,
-                   0,data.get("direction","hinfahrt"),data.get("treatment_facility",""),
-                   float(data.get("distance_km") or 12.4),0))
+                   0, data.get("direction","hinfahrt"),data.get("treatment_facility",""),
+                   float(data.get("distance_km") or 12.4), 0))
         oid=c.execute("SELECT last_insert_rowid() id").fetchone()["id"]
         c.execute("INSERT INTO events(order_id,status,note,created_at) VALUES(?,?,?,?)",(oid,"NEW","Auftrag erstellt",now))
+        c.commit()
+
+        # Automatic demo dispatch: the system selects an eligible available driver.
+        candidates=c.execute("SELECT * FROM drivers WHERE available=1 AND shift_active=1").fetchall()
+        order_row=c.execute("SELECT * FROM orders WHERE id=?",(oid,)).fetchone()
+        eligible=[d for d in candidates if capability_ok(d["capability"],order_row["transport_type"])]
+        if eligible:
+            d=max(eligible, key=lambda x: driver_score(x,order_row)[0])
+            c.execute("UPDATE orders SET driver_id=?,status='OFFERED' WHERE id=?",(d["id"],oid))
+            c.execute("UPDATE drivers SET last_offer_at=? WHERE id=?",(datetime.utcnow().isoformat(),d["id"]))
+            c.execute("INSERT INTO events(order_id,status,note,created_at) VALUES(?,?,?,?)",
+                      (oid,"OFFERED",f"Automatisches Angebot an {d['name']} – 5 Minuten",datetime.utcnow().isoformat()))
+        else:
+            c.execute("INSERT INTO events(order_id,status,note,created_at) VALUES(?,?,?,?)",
+                      (oid,"ALARM", "Kein passender Fahrer verfügbar – Dispatcher/Admin muss eingreifen.", datetime.utcnow().isoformat()))
         c.commit(); c.close()
-        return redirect(url_for("dispatch", order_id=oid))
+
+        # Hospital users must not be redirected to the dispatcher-only /dispatch route.
+        # They return to their dashboard and can see the current order status.
+        if session.get("role") in ("admin", "dispatcher"):
+            return redirect(url_for("dispatch", order_id=oid))
+        return redirect(url_for("dashboard"))
     return render_template("new_order.html", today=datetime.now().date().isoformat())
 
 def driver_score(d, order):
