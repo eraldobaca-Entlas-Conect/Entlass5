@@ -27,6 +27,121 @@
         {% if error %}
         <div class="ec-login-error" role="alert">
           {{ error }}
+          <style>
+/* =========================================================
+   ENTLASS-CONNECT
+   iOS / MOBILE LOGO FIX
+   ========================================================= */
+
+html,
+body {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    box-sizing: border-box;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+
+/* ---------------------------------------------------------
+   MOBILE – iPhone / Android
+   --------------------------------------------------------- */
+
+@media screen and (max-width: 768px) {
+
+    .logo-stage {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+        overflow: hidden !important;
+        box-sizing: border-box !important;
+    }
+
+    .logo-stage img,
+    .logo-stage .ec-logo-img,
+    .ec-logo-img {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        object-fit: contain !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Mos lejo tekstin/logo-n jashtë ekranit */
+    .logo-stage *,
+    .hero *,
+    .branding * {
+        max-width: 100%;
+    }
+
+    /* Hero / pjesa e sipërme */
+    .hero,
+    .branding,
+    .login-hero {
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow: hidden !important;
+    }
+
+}
+
+
+/* ---------------------------------------------------------
+   SMALL iPHONE
+   --------------------------------------------------------- */
+
+@media screen and (max-width: 520px) {
+
+    .logo-stage {
+        padding-left: 8px !important;
+        padding-right: 8px !important;
+    }
+
+    .logo-stage img,
+    .logo-stage .ec-logo-img,
+    .ec-logo-img {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+    }
+
+}
+
+
+/* ---------------------------------------------------------
+   VERY SMALL iPHONE
+   --------------------------------------------------------- */
+
+@media screen and (max-width: 390px) {
+
+    .logo-stage {
+        padding-left: 5px !important;
+        padding-right: 5px !important;
+    }
+
+    .logo-stage img,
+    .logo-stage .ec-logo-img,
+    .ec-logo-img {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+    }
+
+}
+</style>
         </div>
         {% endif %}
 
