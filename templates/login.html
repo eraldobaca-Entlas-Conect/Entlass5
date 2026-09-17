@@ -1,31 +1,101 @@
 {% extends "base.html" %}
+
 {% block content %}
 <main class="ec-login-real" aria-label="ENTLASS-CONNECT Anmeldung">
+
   <div class="ec-login-canvas">
-    <img class="ec-login-art" src="{{ url_for('static', filename='login-background.webp') }}" alt="" aria-hidden="true">
 
-    <!-- Functional HTML overlay: the visual artwork stays frozen; these controls are real. -->
-    <form class="ec-login-hotform" method="post" action="{{ url_for('login') }}" autocomplete="on">
-      {% if error %}
-      <div class="ec-login-error" role="alert">{{ error }}</div>
-      {% endif %}
+    <!-- STATIC BACKGROUND -->
+    <img
+      class="ec-login-art"
+      src="{{ url_for('static', filename='login-background.png') }}"
+      alt=""
+      aria-hidden="true"
+    >
 
-      <label class="ec-visually-hidden" for="ec-username">Benutzername</label>
-      <input id="ec-username" class="ec-login-hot username" name="username"
-             type="text" autocomplete="username" required aria-label="Benutzername">
+    <!-- REAL FUNCTIONAL LOGIN -->
+    <section class="ec-login-panel" aria-label="Anmelden">
 
-      <label class="ec-visually-hidden" for="ec-password">Passwort</label>
-      <input id="ec-password" class="ec-login-hot password" name="password"
-             type="password" autocomplete="current-password" required aria-label="Passwort">
+      <div class="ec-login-panel-inner">
 
-      <label class="ec-remember">
-        <input type="checkbox" name="remember" value="1" aria-label="Angemeldet bleiben">
-        <span aria-hidden="true"></span>
-      </label>
+        <h1>Anmelden</h1>
 
-      <button class="ec-login-hot submit" type="submit">Einloggen →</button>
-      <a class="ec-login-hot forgot" href="#">Passwort vergessen?</a>
-    </form>
+        <p class="ec-login-welcome">
+          Willkommen bei ENTLASS-CONNECT
+        </p>
+
+        {% if error %}
+        <div class="ec-login-error" role="alert">
+          {{ error }}
+        </div>
+        {% endif %}
+
+        <form
+          class="ec-login-hotform"
+          method="post"
+          action="{{ url_for('login') }}"
+          autocomplete="on"
+        >
+
+          <div class="ec-login-field">
+            <label for="ec-username">Benutzername</label>
+
+            <input
+              id="ec-username"
+              name="username"
+              type="text"
+              autocomplete="username"
+              placeholder="Benutzername"
+              required
+              aria-label="Benutzername"
+            >
+          </div>
+
+          <div class="ec-login-field">
+            <label for="ec-password">Passwort</label>
+
+            <input
+              id="ec-password"
+              name="password"
+              type="password"
+              autocomplete="current-password"
+              placeholder="Passwort"
+              required
+              aria-label="Passwort"
+            >
+          </div>
+
+          <label class="ec-remember">
+            <input
+              type="checkbox"
+              name="remember"
+              value="1"
+              aria-label="Angemeldet bleiben"
+            >
+            <span>Angemeldet bleiben</span>
+          </label>
+
+          <button
+            class="ec-login-submit"
+            type="submit"
+          >
+            Einloggen →
+          </button>
+
+          <a
+            class="ec-login-forgot"
+            href="#"
+          >
+            Passwort vergessen?
+          </a>
+
+        </form>
+
+      </div>
+
+    </section>
+
   </div>
+
 </main>
 {% endblock %}
