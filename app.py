@@ -11,6 +11,16 @@ from reportlab.lib.enums import TA_CENTER
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "demo-change-this-secret")
+
+# Session configuration for HTTPS deployments and iOS/Safari.
+# The cookie stays first-party (SameSite=Lax) and is marked Secure in production.
+app.config.update(
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE=os.getenv("SESSION_COOKIE_SAMESITE", "Lax"),
+    SESSION_COOKIE_SECURE=os.getenv("SESSION_COOKIE_SECURE", "true").lower() == "true",
+    SESSION_COOKIE_PATH="/",
+)
+
 DB = os.getenv("DATABASE_PATH", "entlass_connect.db")
 DEMO = os.getenv("DEMO_MODE", "true").lower() == "true"
 
@@ -300,6 +310,15 @@ def make_invoice(order):
 def inject():
     return {"session_user": session.get("name"), "session_role": session.get("role")}
 
+
+@app.errorhandler(403)
+def forbidden(error):
+    # Keep authorization protection, but avoid a blank/generic 403 page.
+    # If a driver reaches a stale dashboard URL, send them to the driver UI.
+    if session.get("role") == "driver":
+        return redirect(url_for("driver"))
+    return "403 – Zugriff verweigert", 403
+
 @app.route("/")
 def index():
     if session.get("user_id"): return redirect(url_for("dashboard"))
@@ -310,8 +329,20 @@ def login():
     if request.method=="POST":
         c=db(); u=c.execute("SELECT * FROM users WHERE username=? AND active=1",(request.form["username"],)).fetchone(); c.close()
         if u and check_password_hash(u["password_hash"],request.form["password"]):
-            session.update(user_id=u["id"], role=u["role"], name=u["name"])
-            if u["role"]=="driver": return redirect(url_for("driver"))
+            # Remove any stale role/session from a previous login before
+            # creating the new authenticated session.
+            session.clear()
+            session.update(
+                user_id=u["id"],
+                username=u["username"],
+                role=u["role"],
+                name=u["name"],
+            )
+
+            # Drivers must never be sent to the dispatcher dashboard.
+            if u["role"] == "driver":
+                return redirect(url_for("driver"))
+
             return redirect(url_for("dashboard"))
         return render_template("login.html", error="Benutzername oder Passwort ist falsch.")
     return render_template("login.html")
@@ -321,8 +352,14 @@ def logout():
     session.clear(); return redirect(url_for("login"))
 
 @app.get("/dashboard")
-@login_required(["admin","dispatcher","hospital"])
+@login_required(["admin","dispatcher","hospital","driver"])
 def dashboard():
+    # iOS/Safari can reopen a previously visited /dashboard URL.
+    # A driver session must be routed back to the driver UI instead of
+    # receiving a 403 because the browser retained the dashboard URL.
+    if session.get("role") == "driver":
+        return redirect(url_for("driver"))
+
     c=db()
     orders=c.execute("""SELECT o.*, d.name driver_name FROM orders o LEFT JOIN drivers d ON d.id=o.driver_id
                        ORDER BY o.id DESC LIMIT 50""").fetchall()
@@ -435,6 +472,14 @@ def api_dispatch(order_id):
               (order_id,"OFFERED",f"Angebot an {d['name']} – 5 Minuten",now))
     c.commit(); c.close()
     return jsonify(driver=d["name"],expires_in_seconds=300)
+
+@app.get("/fahrer-mobile")
+@login_required(["driver"])
+def fahrer_mobile():
+    # Mobile/iOS compatibility endpoint. Keeps the existing driver workflow
+    # unchanged while providing the intended mobile URL.
+    return redirect(url_for("driver"))
+
 
 @app.get("/driver")
 @login_required(["driver"])
