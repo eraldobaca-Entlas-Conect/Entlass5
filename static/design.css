@@ -20,10 +20,11 @@ body:has(.app-shell){overflow-x:hidden}.app-shell{display:grid;grid-template-col
 .page{max-width:none;padding:0}.titlebar{margin-bottom:18px}.titlebar h1{font-size:39px;color:var(--ec-ink)}.titlebar p{font-size:14px}.button,button{border-radius:11px;background:linear-gradient(135deg,#1c9e8c,#35bb78);box-shadow:0 7px 18px rgba(31,165,143,.18);padding:11px 16px}.card,.stats>div{border-radius:18px;box-shadow:var(--ec-shadow);border:1px solid var(--ec-line)}
 .stats{gap:13px}.stats>div{padding:18px 20px;position:relative;overflow:hidden}.stats>div:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--ec-blue)}.stats>div:nth-child(2):before{background:var(--ec-green)}.stats>div:nth-child(3):before{background:#f2a629}.stats>div:nth-child(4):before{background:var(--ec-red)}.stats b{font-size:29px;color:var(--ec-ink)}
 .card{padding:20px}.sectionhead{margin-bottom:10px}.sectionhead h2{font-size:20px}.tag{padding:6px 10px;background:#e7f4f1;color:#217568}.tablewrap{border:1px solid var(--ec-line);border-radius:13px}.tablewrap table{background:#fff}.tablewrap th{background:#f7faf9;padding:10px 9px}.tablewrap td{padding:11px 9px}
-/* ENTLASS-CONNECT — LOGIN VISUAL FREEZE v1
-   This file is ONLY the Login visual layer.
-   Do not modify for backend/business logic.
-   The artwork is rendered as a fixed visual canvas; form controls remain real HTML. */
+/* ENTLASS-CONNECT — LOGIN VISUAL FREEZE v2
+   VISUAL MASTER: login-background.webp
+   The artwork remains untouched. Only transparent, functional HTML controls
+   are layered over the exact login areas.
+*/
 
 :root{
   --ec-login-navy:#063a5e;
@@ -32,7 +33,6 @@ body:has(.app-shell){overflow-x:hidden}.app-shell{display:grid;grid-template-col
   --ec-login-green:#27d18a;
 }
 
-/* Keep authenticated/application styling from this file intact elsewhere. */
 body:has(.ec-login-real){
   margin:0;
   background:#062f4f;
@@ -53,9 +53,7 @@ body:has(.ec-login-real) header{
   justify-content:center;
   padding:12px;
   box-sizing:border-box;
-  background:
-    radial-gradient(circle at 75% 10%,rgba(24,221,202,.14),transparent 28%),
-    linear-gradient(180deg,#f4f8fa 0%,#e8f1f5 100%);
+  background:#eaf3f6;
 }
 
 .ec-login-canvas{
@@ -82,7 +80,6 @@ body:has(.ec-login-real) header{
   z-index:0;
 }
 
-/* Real interactive controls are placed over the exact artwork. */
 .ec-login-hotform{
   position:absolute;
   inset:0;
@@ -91,52 +88,75 @@ body:has(.ec-login-real) header{
   padding:0;
 }
 
+/* The following controls are intentionally transparent.
+   The visible fields/buttons belong to the frozen artwork. */
 .ec-login-hot{
   position:absolute;
   box-sizing:border-box;
   font-family:inherit;
 }
 
-/* Coordinates are percentages of the 1821×864 master artwork. */
 .ec-login-hot.username{
-  left:63.52%;
+  left:63.45%;
   top:36.10%;
-  width:27.40%;
+  width:27.55%;
   height:7.85%;
   padding:0 4.0%;
   border:0;
-  outline:0;
+  outline:none;
   background:transparent;
-  color:#183f61;
+  color:#173e5f;
   font-size:clamp(12px,1.05vw,19px);
+  border-radius:12px;
+  box-shadow:none;
+  -webkit-appearance:none;
+  appearance:none;
 }
 
 .ec-login-hot.password{
-  left:63.52%;
+  left:63.45%;
   top:46.12%;
-  width:27.40%;
+  width:27.55%;
   height:7.85%;
   padding:0 4.0%;
   border:0;
-  outline:0;
+  outline:none;
   background:transparent;
-  color:#183f61;
+  color:#173e5f;
   font-size:clamp(12px,1.05vw,19px);
+  border-radius:12px;
+  box-shadow:none;
+  -webkit-appearance:none;
+  appearance:none;
 }
 
 .ec-login-hot.username:focus,
 .ec-login-hot.password:focus{
-  box-shadow:inset 0 0 0 3px rgba(22,199,194,.55);
-  border-radius:12px;
-  background:rgba(255,255,255,.10);
+  border:0;
+  outline:none;
+  background:transparent;
+  box-shadow:none;
+}
+
+/* Prevent browser autofill from replacing the artwork with a white field. */
+.ec-login-hot.username:-webkit-autofill,
+.ec-login-hot.password:-webkit-autofill,
+.ec-login-hot.username:-webkit-autofill:hover,
+.ec-login-hot.password:-webkit-autofill:hover,
+.ec-login-hot.username:-webkit-autofill:focus,
+.ec-login-hot.password:-webkit-autofill:focus{
+  -webkit-text-fill-color:#173e5f;
+  -webkit-box-shadow:0 0 0 1000px transparent inset;
+  transition:background-color 9999s ease-out 0s;
+  background-color:transparent !important;
 }
 
 .ec-remember{
   position:absolute;
-  left:63.62%;
-  top:56.65%;
-  width:3.0%;
-  height:3.1%;
+  left:63.58%;
+  top:56.60%;
+  width:3.05%;
+  height:3.25%;
   z-index:8;
   cursor:pointer;
 }
@@ -155,12 +175,13 @@ body:has(.ec-login-real) header{
   position:absolute;
   inset:0;
   border-radius:4px;
-  background:rgba(255,255,255,.96);
-  box-shadow:0 1px 4px rgba(0,0,0,.20);
+  background:transparent;
+  box-shadow:none;
 }
 
 .ec-remember input:checked + span{
-  background:#20c98c;
+  background:rgba(32,201,140,.95);
+  box-shadow:0 1px 4px rgba(0,0,0,.18);
 }
 
 .ec-remember input:checked + span::after{
@@ -169,51 +190,70 @@ body:has(.ec-login-real) header{
   inset:0;
   display:grid;
   place-items:center;
-  color:white;
+  color:#fff;
   font-size:clamp(9px,1vw,17px);
   font-weight:900;
 }
 
 .ec-login-hot.submit{
-  left:63.54%;
+  left:63.45%;
   top:63.05%;
-  width:27.50%;
+  width:27.55%;
   height:7.90%;
   border:0;
   border-radius:12px;
+  outline:none;
   background:transparent;
   color:transparent;
   cursor:pointer;
   font-size:0;
+  box-shadow:none;
+  -webkit-appearance:none;
+  appearance:none;
 }
 
+.ec-login-hot.submit:hover,
+.ec-login-hot.submit:active{
+  background:transparent;
+  box-shadow:none;
+  transform:none;
+}
+
+.ec-login-hot.submit:focus,
 .ec-login-hot.submit:focus-visible{
-  outline:3px solid #fff;
-  outline-offset:3px;
-  border-radius:12px;
+  outline:2px solid rgba(255,255,255,.85);
+  outline-offset:2px;
+  background:transparent;
+  box-shadow:none;
 }
 
 .ec-login-hot.forgot{
-  left:69.5%;
-  top:74.4%;
-  width:15.7%;
-  height:4.3%;
+  left:69.35%;
+  top:74.35%;
+  width:15.9%;
+  height:4.5%;
   color:transparent;
   text-decoration:none;
   font-size:0;
   border-radius:8px;
 }
 
+.ec-login-hot.forgot:hover,
+.ec-login-hot.forgot:active{
+  background:transparent;
+}
+
+.ec-login-hot.forgot:focus,
 .ec-login-hot.forgot:focus-visible{
-  outline:3px solid #fff;
-  outline-offset:3px;
+  outline:2px solid rgba(255,255,255,.85);
+  outline-offset:2px;
 }
 
 .ec-login-error{
   position:absolute;
-  left:63.5%;
+  left:63.45%;
   top:29%;
-  width:27.5%;
+  width:27.55%;
   padding:9px 12px;
   box-sizing:border-box;
   border-radius:9px;
@@ -237,8 +277,7 @@ body:has(.ec-login-real) header{
   border:0!important;
 }
 
-/* At smaller widths the artwork remains coherent instead of being stretched.
-   Mobile gets a real, compact login layout. */
+/* Mobile: retain a usable real form while keeping the master artwork intact. */
 @media(max-width:760px){
   .ec-login-real{
     min-height:100dvh;
@@ -253,43 +292,12 @@ body:has(.ec-login-real) header{
     aspect-ratio:auto;
     border-radius:0;
     box-shadow:none;
-    background:
-      radial-gradient(circle at 20% 10%,rgba(20,217,220,.40),transparent 35%),
-      linear-gradient(160deg,#053a61 0%,#087e8e 52%,#20b981 100%);
   }
 
   .ec-login-art{
     height:100%;
     object-fit:cover;
     object-position:18% center;
-    opacity:.28;
-  }
-
-  .ec-login-hotform{
-    inset:0;
-  }
-
-  .ec-login-hotform::before{
-    content:"ENTLASS CONNECT";
-    position:absolute;
-    left:9%;
-    top:9%;
-    color:white;
-    font-size:clamp(25px,8vw,40px);
-    line-height:.95;
-    font-weight:900;
-    letter-spacing:-1px;
-    text-shadow:0 4px 18px rgba(0,0,0,.25);
-  }
-
-  .ec-login-hotform::after{
-    content:"Entlassung verbindet Menschen.";
-    position:absolute;
-    left:9%;
-    top:20%;
-    color:rgba(255,255,255,.92);
-    font-size:clamp(13px,4vw,18px);
-    font-weight:500;
   }
 
   .ec-login-hot.username,
@@ -299,7 +307,7 @@ body:has(.ec-login-real) header{
     height:58px;
     background:rgba(255,255,255,.96);
     border-radius:14px;
-    color:#153f61;
+    color:#173e5f;
     padding:0 16px;
     font-size:16px;
     box-shadow:0 10px 30px rgba(0,0,0,.12);
@@ -307,6 +315,12 @@ body:has(.ec-login-real) header{
 
   .ec-login-hot.username{top:34%}
   .ec-login-hot.password{top:43%}
+
+  .ec-login-hot.username:focus,
+  .ec-login-hot.password:focus{
+    background:rgba(255,255,255,.96);
+    box-shadow:0 10px 30px rgba(0,0,0,.12);
+  }
 
   .ec-remember{
     left:9%;
@@ -328,6 +342,12 @@ body:has(.ec-login-real) header{
     box-shadow:0 12px 30px rgba(0,0,0,.20);
   }
 
+  .ec-login-hot.submit:hover,
+  .ec-login-hot.submit:active{
+    background:linear-gradient(135deg,#11a9c2,#25d083);
+    box-shadow:0 12px 30px rgba(0,0,0,.20);
+  }
+
   .ec-login-hot.forgot{
     left:35%;
     top:68%;
@@ -344,6 +364,7 @@ body:has(.ec-login-real) header{
     width:84%;
   }
 }
+
 /* order */
 .order-shell{max-width:1220px;padding:0;margin:auto}.order-head{align-items:center}.order-wizard{min-height:670px;padding:24px;border-radius:22px}.wizardbar{gap:7px}.wstep{border-radius:13px;padding:11px 13px;background:#f0f5f4}.wstep.active{background:linear-gradient(90deg,#dff5ed,#eefaf7);border-color:#bce8db}.wstep i{background:#dbe7e4}.wstep.active i{background:linear-gradient(135deg,#1b9e8c,#35bb78)}.wizard-step{padding:4px 3px}.step-title{margin-bottom:18px}.step-title h2{font-size:25px}.quickgrid{gap:14px}.wizard-step input,.wizard-step select,.wizard-step textarea{background:#fff;border-color:#d8e6e3}.transport-choices label,.reason-grid label{background:#fff;transition:.18s}.transport-choices label:has(input:checked),.reason-grid label:has(input:checked){border-color:#46bda1;background:#edf9f5;box-shadow:0 5px 15px rgba(31,165,143,.08)}.wizard-actions{border-top:1px solid #edf2f0;margin-top:18px;padding-top:17px}.wizard-actions .secondary{background:#fff;border:1px solid var(--ec-line);color:#356660}
 /* driver */
@@ -352,3 +373,226 @@ body:has(.ec-login-real) header{
 .filterbar{display:flex;gap:10px}.filterbar select{flex:1;padding:11px;border:1px solid var(--ec-line);border-radius:10px}
 @media(max-width:900px){.app-shell{display:block}.app-sidebar{display:none}.app-topbar{top:72px;padding:0 13px}.app-topbar .search{display:none}.app-content{padding:18px 12px 40px}.ec-login{grid-template-columns:1fr;padding:12px;min-height:calc(100vh - 72px)}.ec-login-hero{border-radius:20px;min-height:310px;padding:25px}.ec-login-hero h1{font-size:34px}.ec-login-logo{margin-bottom:22px}.ec-login-logo img{width:58px;height:58px}.ec-login-logo b,.ec-login-logo strong{font-size:22px}.ec-features{grid-template-columns:repeat(2,1fr);margin-top:18px}.ec-login-form{border-radius:20px;padding:25px;margin-top:10px}.order-shell{padding:0}.order-wizard{min-height:calc(100dvh - 150px);padding:12px}.wizardbar{grid-template-columns:repeat(4,1fr)}.wstep{padding:7px}.wstep b{font-size:9px}.wstep small{display:none}.quickgrid,.reason-grid,.transport-choices{grid-template-columns:1fr 1fr}.order-head h1{font-size:26px}.stats{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}.top{height:72px;padding:8px 13px}.userbar .userrole{display:none}.logout{padding:9px 12px;min-width:92px;background:#e53945 !important;color:#fff !important;border:2px solid #c51f2b !important}.driverhead{padding:17px}.driverpage .offer{flex-direction:column;align-items:stretch}.driverpage .offer .bigbtn{width:100%}}
 @media(max-width:560px){.top .brand span{display:none}.ec-login-hero{min-height:265px}.ec-login-hero h1{font-size:29px}.ec-login-hero p{font-size:13px}.ec-feature{padding:9px}.ec-feature b{font-size:10px}.ec-feature small{font-size:8px}.quickgrid,.reason-grid,.transport-choices{grid-template-columns:1fr}.stats b{font-size:22px}.stats>div{padding:14px}.titlebar h1{font-size:29px}.app-topbar{height:50px}.app-content{padding-top:14px}.order-wizard{height:auto;overflow:visible}.wizard-step{height:auto;min-height:480px;overflow:visible}.wizard-actions{position:sticky;bottom:8px;background:rgba(255,255,255,.96);z-index:20}.wizard-actions button{width:50%}}
+
+
+/* =========================================================
+   ENTLASS-CONNECT LOGIN — MOBILE MASTER
+   iOS / Android responsive layer
+   The desktop artwork remains untouched above 900px.
+   ========================================================= */
+
+html, body {
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body.ec-login-page {
+  min-height: 100dvh;
+  overflow: hidden;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+.ec-login {
+  width: 100%;
+  min-height: 100dvh;
+  box-sizing: border-box;
+}
+
+/* Phones: portrait */
+@media (max-width: 899px) {
+  body.ec-login-page {
+    min-height: 100dvh;
+    height: 100dvh;
+    overflow: hidden;
+    background: #063d5c;
+  }
+
+  .ec-login {
+    position: relative;
+    width: 100%;
+    height: 100dvh;
+    min-height: 100dvh;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding:
+      max(14px, env(safe-area-inset-top))
+      14px
+      max(14px, env(safe-area-inset-bottom));
+    box-sizing: border-box;
+    background:
+      linear-gradient(180deg, rgba(2,48,75,.08), rgba(1,72,93,.42)),
+      url("/static/login-background.webp") center center / cover no-repeat;
+  }
+
+  /* Hide desktop-only artwork text so the mobile login stays clean. */
+  .ec-login-left .ec-login-brand,
+  .ec-login-left .ec-login-slogan,
+  .ec-login-left .ec-login-decoration {
+    display: none !important;
+  }
+
+  .ec-login-left {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    background: transparent !important;
+  }
+
+  /* Login panel becomes a soft translucent continuation of the artwork. */
+  .ec-login-right {
+    position: relative;
+    z-index: 5;
+    width: min(100%, 430px);
+    margin: 0 auto;
+    padding: 26px 22px 22px;
+    box-sizing: border-box;
+    border: 1px solid rgba(255,255,255,.38);
+    border-radius: 26px;
+    background:
+      linear-gradient(145deg,
+        rgba(3,73,111,.86),
+        rgba(3,113,126,.78) 55%,
+        rgba(4,163,127,.68));
+    box-shadow:
+      0 20px 55px rgba(0,25,45,.35),
+      inset 0 1px 0 rgba(255,255,255,.20);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  .ec-login-right h2 {
+    color: #fff !important;
+    text-align: left;
+    margin: 0 0 7px;
+    font-size: clamp(28px, 7vw, 36px);
+    line-height: 1.05;
+  }
+
+  .ec-login-right .sub {
+    color: rgba(255,255,255,.90) !important;
+    margin: 0 0 22px;
+    text-align: left;
+  }
+
+  .ec-login-form label {
+    color: #fff !important;
+  }
+
+  .ec-login-form input[type="text"],
+  .ec-login-form input[type="password"],
+  .ec-login-form input[type="email"] {
+    width: 100%;
+    min-height: 52px;
+    box-sizing: border-box;
+    border-radius: 13px;
+    border: 1px solid rgba(255,255,255,.48);
+    background: rgba(255,255,255,.97);
+    color: #123b50;
+    font-size: 16px; /* prevents iOS Safari zoom */
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  .ec-login-form input:focus {
+    outline: none;
+    border-color: rgba(51,221,199,.95);
+    box-shadow: 0 0 0 3px rgba(51,221,199,.18);
+  }
+
+  .ec-login-form button[type="submit"] {
+    width: 100%;
+    min-height: 54px;
+    margin-top: 8px;
+    border: 0;
+    border-radius: 13px;
+    font-size: 16px;
+    font-weight: 800;
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+
+  .ec-login-form .remember {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #fff !important;
+    font-size: 15px;
+  }
+
+  .ec-login-form .remember input {
+    width: 20px;
+    height: 20px;
+    flex: 0 0 20px;
+    margin: 0;
+    accent-color: #27c69b;
+  }
+
+  .ec-login-form .forgot,
+  .ec-login-right a {
+    color: #fff !important;
+  }
+
+  .demo-access {
+    display: none !important;
+  }
+}
+
+/* Small phones */
+@media (max-width: 430px) {
+  .ec-login {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .ec-login-right {
+    width: 100%;
+    padding: 22px 18px 18px;
+    border-radius: 22px;
+  }
+
+  .ec-login-right h2 {
+    font-size: 30px;
+  }
+}
+
+/* Very short phone screens / landscape phones:
+   preserve usability without introducing page scroll. */
+@media (max-height: 680px) and (max-width: 899px) {
+  .ec-login {
+    align-items: center;
+    padding-top: max(8px, env(safe-area-inset-top));
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+  }
+
+  .ec-login-right {
+    padding-top: 17px;
+    padding-bottom: 15px;
+  }
+
+  .ec-login-right h2 {
+    font-size: 27px;
+    margin-bottom: 4px;
+  }
+
+  .ec-login-right .sub {
+    margin-bottom: 12px;
+  }
+
+  .ec-login-form input[type="text"],
+  .ec-login-form input[type="password"],
+  .ec-login-form input[type="email"] {
+    min-height: 46px;
+  }
+
+  .ec-login-form button[type="submit"] {
+    min-height: 48px;
+  }
+}
