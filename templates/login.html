@@ -1,216 +1,876 @@
-{% extends "base.html" %}
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
 
-{% block content %}
-<main class="ec-login-real" aria-label="ENTLASS-CONNECT Anmeldung">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover">
 
-  <div class="ec-login-canvas">
+<meta name="theme-color" content="#062b43">
 
-    <!-- STATIC BACKGROUND -->
-    <img
-      class="ec-login-art"
-      src="{{ url_for('static', filename='login-background.png') }}"
-      alt=""
-      aria-hidden="true"
-    >
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 
-    <!-- REAL FUNCTIONAL LOGIN -->
-    <section class="ec-login-panel" aria-label="Anmelden">
+<title>ENTLASS-CONNECT · Anmeldung</title>
 
-      <div class="ec-login-panel-inner">
+<style>
 
-        <h1>Anmelden</h1>
-
-        <p class="ec-login-welcome">
-          Willkommen bei ENTLASS-CONNECT
-        </p>
-
-        {% if error %}
-        <div class="ec-login-error" role="alert">
-          {{ error }}
-          <style>
-/* =========================================================
-   ENTLASS-CONNECT
-   iOS / MOBILE LOGO FIX
-   ========================================================= */
+* {
+    box-sizing: border-box;
+}
 
 html,
 body {
-    width: 100%;
-    max-width: 100%;
     margin: 0;
     padding: 0;
+    width: 100%;
+    min-height: 100%;
+    font-family:
+        Inter,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+    background: #062b43;
+}
+
+body {
     overflow-x: hidden;
+}
+
+
+/* =====================================================
+   DESKTOP
+   ===================================================== */
+
+.desktop-login {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
+
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+
+    background:
+        linear-gradient(
+            135deg,
+            #062b43 0%,
+            #073c57 55%,
+            #075d68 100%
+        );
+
+    overflow: hidden;
+}
+
+
+/* =====================================================
+   DECORATIVE ROAD
+   ===================================================== */
+
+.desktop-login::after {
+    content: "";
+    position: absolute;
+
+    left: -5%;
+    bottom: -18%;
+
+    width: 62%;
+    height: 58%;
+
+    border-top: 5px solid rgba(255,255,255,.20);
+    border-right: 5px solid rgba(33,215,207,.35);
+
+    border-radius: 0 75% 0 0;
+
+    transform: rotate(-9deg);
+
+    opacity: .75;
+
+    pointer-events: none;
+    z-index: 1;
+}
+
+
+/* =====================================================
+   BRAND AREA
+   ===================================================== */
+
+.brand-image {
+    position: absolute;
+
+    top: 8%;
+    left: 5%;
+
+    width: min(650px, 48vw);
+
+    z-index: 3;
+
+    pointer-events: none;
+}
+
+.brand-image img {
+    display: block;
+
+    width: 100%;
+    height: auto;
+
+    object-fit: contain;
+
+    filter:
+        drop-shadow(
+            0 18px 35px
+            rgba(0,0,0,.22)
+        );
+}
+
+
+/* =====================================================
+   LOGIN CARD
+   ===================================================== */
+
+.login-card {
+    position: absolute;
+
+    top: 50%;
+    right: 6%;
+
+    left: auto;
+
+    transform: translateY(-50%);
+
+    width: min(460px, 38vw);
+
+    padding: 42px 42px 38px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(35,82,119,.98),
+            rgba(8,45,70,.98)
+        );
+
+    border:
+        1px solid
+        rgba(255,255,255,.20);
+
+    border-radius: 28px;
+
+    box-shadow:
+        0 30px 80px
+        rgba(0,0,0,.38);
+
+    z-index: 10;
+}
+
+.login-card h2 {
+    margin: 0 0 12px;
+
+    text-align: center;
+
+    color: #ffffff;
+
+    font-size: 14px;
+
+    letter-spacing: 4px;
+
+    font-weight: 800;
+}
+
+.login-card h1 {
+    margin: 0 0 14px;
+
+    text-align: center;
+
+    color: #ffffff;
+
+    font-size: clamp(36px, 3.2vw, 50px);
+
+    line-height: 1.05;
+
+    font-weight: 800;
+}
+
+.login-description {
+    margin: 0 0 32px;
+
+    text-align: center;
+
+    color:
+        rgba(255,255,255,.82);
+
+    font-size: 16px;
+
+    line-height: 1.5;
+}
+
+
+/* =====================================================
+   FORM
+   ===================================================== */
+
+.login-form {
+    width: 100%;
+}
+
+.field {
+    margin-bottom: 19px;
+}
+
+.field label {
+    display: block;
+
+    margin-bottom: 8px;
+
+    color: #ffffff;
+
+    font-size: 14px;
+
+    font-weight: 700;
+}
+
+.field input {
     box-sizing: border-box;
+
+    width: 100%;
+    height: 58px;
+
+    padding: 0 18px;
+
+    border:
+        1px solid
+        rgba(255,255,255,.28);
+
+    border-radius: 14px;
+
+    background:
+        rgba(205,220,232,.82);
+
+    color: #12384f;
+
+    font-size: 16px;
+
+    outline: none;
+
+    transition:
+        border-color .2s,
+        box-shadow .2s;
 }
 
-*,
-*::before,
-*::after {
-    box-sizing: border-box;
+.field input::placeholder {
+    color:
+        rgba(40,65,82,.58);
 }
 
+.field input:focus {
+    border-color: #21d7cf;
 
-/* ---------------------------------------------------------
-   MOBILE – iPhone / Android
-   --------------------------------------------------------- */
-
-@media screen and (max-width: 768px) {
-
-    .logo-stage {
-        width: 100% !important;
-        max-width: 100% !important;
-        margin-left: auto !important;
-        margin-right: auto !important;
-        padding-left: 10px !important;
-        padding-right: 10px !important;
-        overflow: hidden !important;
-        box-sizing: border-box !important;
-    }
-
-    .logo-stage img,
-    .logo-stage .ec-logo-img,
-    .ec-logo-img {
-        display: block !important;
-        width: 100% !important;
-        max-width: 100% !important;
-        height: auto !important;
-        margin-left: auto !important;
-        margin-right: auto !important;
-        object-fit: contain !important;
-        box-sizing: border-box !important;
-    }
-
-    /* Mos lejo tekstin/logo-n jashtë ekranit */
-    .logo-stage *,
-    .hero *,
-    .branding * {
-        max-width: 100%;
-    }
-
-    /* Hero / pjesa e sipërme */
-    .hero,
-    .branding,
-    .login-hero {
-        width: 100% !important;
-        max-width: 100% !important;
-        overflow: hidden !important;
-    }
-
+    box-shadow:
+        0 0 0 3px
+        rgba(33,215,207,.18);
 }
 
+.password-wrap {
+    position: relative;
+}
 
-/* ---------------------------------------------------------
-   SMALL iPHONE
-   --------------------------------------------------------- */
+.password-wrap input {
+    padding-right: 54px;
+}
 
-@media screen and (max-width: 520px) {
+.password-eye {
+    position: absolute;
 
-    .logo-stage {
-        padding-left: 8px !important;
-        padding-right: 8px !important;
-    }
+    right: 5px;
+    top: 6px;
 
-    .logo-stage img,
-    .logo-stage .ec-logo-img,
-    .ec-logo-img {
-        width: 100% !important;
-        max-width: 100% !important;
-        height: auto !important;
-    }
+    width: 46px;
+    height: 46px;
 
+    border: 0;
+
+    background: transparent;
+
+    cursor: pointer;
+
+    font-size: 19px;
+
+    color: #ffffff;
 }
 
 
-/* ---------------------------------------------------------
-   VERY SMALL iPHONE
-   --------------------------------------------------------- */
+/* =====================================================
+   BUTTON
+   ===================================================== */
 
-@media screen and (max-width: 390px) {
+.login-button {
+    width: 100%;
+    height: 58px;
 
-    .logo-stage {
-        padding-left: 5px !important;
-        padding-right: 5px !important;
+    margin-top: 9px;
+
+    border: 0;
+    border-radius: 14px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #13d6cb 0%,
+            #18bcae 100%
+        );
+
+    color: #ffffff;
+
+    font-size: 17px;
+
+    font-weight: 800;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 10px 26px
+        rgba(10,210,195,.25);
+
+    transition:
+        transform .15s,
+        box-shadow .15s;
+}
+
+.login-button:hover {
+    box-shadow:
+        0 14px 32px
+        rgba(10,210,195,.38);
+}
+
+.login-button:active {
+    transform: translateY(1px);
+}
+
+
+/* =====================================================
+   ERROR
+   ===================================================== */
+
+.error {
+    margin-top: 14px;
+
+    padding: 11px;
+
+    border-radius: 10px;
+
+    background:
+        rgba(255,70,80,.15);
+
+    border:
+        1px solid
+        rgba(255,120,130,.25);
+
+    color: #ffffff;
+
+    font-size: 13px;
+
+    text-align: center;
+
+    font-weight: 700;
+}
+
+
+/* =====================================================
+   MOBILE
+   ===================================================== */
+
+.mobile-login {
+    display: none;
+}
+
+@media (max-width: 700px) {
+
+    .desktop-login {
+        display: none;
     }
 
-    .logo-stage img,
-    .logo-stage .ec-logo-img,
-    .ec-logo-img {
-        width: 100% !important;
-        max-width: 100% !important;
-        height: auto !important;
+    .mobile-login {
+        display: block;
+
+        width: 100%;
+        min-height: 100dvh;
+
+        background: #062b43;
+
+        overflow: hidden;
+    }
+
+    .mobile-brand {
+        position: relative;
+
+        width: 100%;
+
+        background: #062b43;
+
+        display: flex;
+
+        justify-content: center;
+
+        align-items: flex-start;
+
+        padding: 0;
+
+        overflow: hidden;
+    }
+
+    .mobile-brand img {
+        display: block;
+
+        width: 100%;
+        height: auto;
+
+        object-fit: contain;
+    }
+
+    .mobile-login-panel {
+        position: relative;
+
+        width: 100%;
+
+        padding:
+            34px
+            24px
+            45px;
+
+        background:
+            linear-gradient(
+                145deg,
+                #24547c 0%,
+                #123f62 55%,
+                #08354f 100%
+            );
+
+        border-top:
+            1px solid
+            rgba(255,255,255,.20);
+
+        border-radius:
+            28px 28px 0 0;
+
+        box-shadow:
+            0 -15px 45px
+            rgba(0,0,0,.25);
+    }
+
+    .mobile-login-panel h2 {
+        margin: 0 0 10px;
+
+        text-align: center;
+
+        color: #ffffff;
+
+        font-size: 13px;
+
+        letter-spacing: 4px;
+
+        font-weight: 800;
+    }
+
+    .mobile-login-panel h1 {
+        margin: 0 0 12px;
+
+        text-align: center;
+
+        color: #ffffff;
+
+        font-size: 42px;
+
+        line-height: 1;
+
+        font-weight: 800;
+    }
+
+    .mobile-description {
+        margin:
+            0 auto
+            30px;
+
+        max-width: 330px;
+
+        text-align: center;
+
+        color:
+            rgba(255,255,255,.78);
+
+        font-size: 16px;
+
+        line-height: 1.45;
+    }
+
+    .mobile-form {
+        width: 100%;
+
+        max-width: 520px;
+
+        margin: 0 auto;
+    }
+
+    .mobile-form .field {
+        margin-bottom: 18px;
+    }
+
+    .mobile-form .field label {
+        color: #ffffff;
+
+        font-size: 14px;
+
+        margin-bottom: 8px;
+    }
+
+    .mobile-form .field input {
+        height: 56px;
+
+        border-radius: 14px;
+
+        background:
+            rgba(194,213,228,.72);
+
+        font-size: 16px;
+    }
+
+    .mobile-form .login-button {
+        height: 56px;
+
+        border-radius: 14px;
+
+        margin-top: 4px;
+    }
+}
+
+@media (max-width: 390px) {
+
+    .mobile-login-panel {
+        padding:
+            30px
+            20px
+            40px;
+    }
+
+    .mobile-login-panel h1 {
+        font-size: 38px;
+    }
+
+    .mobile-description {
+        font-size: 15px;
+    }
+
+    .mobile-form .field input {
+        height: 52px;
+
+        font-size: 15px;
+    }
+
+    .mobile-form .login-button {
+        height: 52px;
+    }
+}
+
+@supports (padding: env(safe-area-inset-top)) {
+
+    .mobile-login {
+        padding-top:
+            env(safe-area-inset-top);
     }
 
 }
+
 </style>
-        </div>
-        {% endif %}
+
+<!-- =====================================================
+     MOBILE OVERRIDE
+     iOS + ANDROID ONLY
+     Desktop bleibt unverändert
+     ===================================================== -->
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='css/mobile-login-ios-android.css') }}?v=20260918">
+
+</head>
+
+
+<body>
+
+
+<!-- =====================================================
+     DESKTOP LOGIN
+     ===================================================== -->
+
+<div class="desktop-login">
+
+    <div class="brand-image">
+
+        <img
+            src="/static/login-brand-final-dark.png"
+            alt="ENTLASS-CONNECT">
+
+    </div>
+
+
+    <div class="login-card">
+
+        <h2>
+            SICHER ANMELDEN
+        </h2>
+
+        <h1>
+            Willkommen<br>
+            zurück.
+        </h1>
+
+        <p class="login-description">
+            Melden Sie sich mit Ihrem
+            ENTLASS-CONNECT Zugang an.
+        </p>
+
 
         <form
-          class="ec-login-hotform"
-          method="post"
-          action="{{ url_for('login') }}"
-          autocomplete="on"
-        >
+            class="login-form"
+            method="post"
+            autocomplete="on">
 
-          <div class="ec-login-field">
-            <label for="ec-username">Benutzername</label>
 
-            <input
-              id="ec-username"
-              name="username"
-              type="text"
-              autocomplete="username"
-              placeholder="Benutzername"
-              required
-              aria-label="Benutzername"
-            >
-          </div>
+            <div class="field">
 
-          <div class="ec-login-field">
-            <label for="ec-password">Passwort</label>
+                <label for="desktop-username">
+                    Benutzername
+                </label>
 
-            <input
-              id="ec-password"
-              name="password"
-              type="password"
-              autocomplete="current-password"
-              placeholder="Passwort"
-              required
-              aria-label="Passwort"
-            >
-          </div>
+                <input
+                    id="desktop-username"
+                    name="username"
+                    type="text"
+                    autocomplete="username"
+                    autocapitalize="none"
+                    autocorrect="off"
+                    spellcheck="false"
+                    placeholder="Benutzername eingeben"
+                    required>
 
-          <label class="ec-remember">
-            <input
-              type="checkbox"
-              name="remember"
-              value="1"
-              aria-label="Angemeldet bleiben"
-            >
-            <span>Angemeldet bleiben</span>
-          </label>
+            </div>
 
-          <button
-            class="ec-login-submit"
-            type="submit"
-          >
-            Einloggen →
-          </button>
 
-          <a
-            class="ec-login-forgot"
-            href="#"
-          >
-            Passwort vergessen?
-          </a>
+            <div class="field">
+
+                <label for="desktop-password">
+                    Passwort
+                </label>
+
+                <div class="password-wrap">
+
+                    <input
+                        id="desktop-password"
+                        name="password"
+                        type="password"
+                        autocomplete="current-password"
+                        placeholder="Passwort eingeben"
+                        required>
+
+                    <button
+                        type="button"
+                        class="password-eye"
+                        onclick="togglePassword(
+                            'desktop-password',
+                            this
+                        )"
+                        aria-label="Passwort anzeigen">
+
+                        👁
+
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <button
+                type="submit"
+                class="login-button">
+
+                Anmelden →
+
+            </button>
+
+
+            {% if error %}
+
+            <div class="error">
+                {{ error }}
+            </div>
+
+            {% endif %}
+
 
         </form>
 
-      </div>
+    </div>
 
-    </section>
+</div>
 
-  </div>
 
-</main>
-{% endblock %}
+
+<!-- =====================================================
+     MOBILE LOGIN
+     ===================================================== -->
+
+<div class="mobile-login">
+
+
+    <div class="mobile-brand">
+
+        <img
+            src="/static/login-brand-final-dark.png"
+            alt="ENTLASS-CONNECT">
+
+    </div>
+
+
+    <div class="mobile-login-panel">
+
+        <h2>
+            SICHER ANMELDEN
+        </h2>
+
+        <h1>
+            Anmelden
+        </h1>
+
+        <p class="mobile-description">
+            Bitte melden Sie sich mit Ihrem
+            Benutzerkonto an.
+        </p>
+
+
+        <form
+            class="mobile-form"
+            method="post"
+            autocomplete="on">
+
+
+            <div class="field">
+
+                <label for="mobile-username">
+                    Benutzername
+                </label>
+
+                <input
+                    id="mobile-username"
+                    name="username"
+                    type="text"
+                    autocomplete="username"
+                    autocapitalize="none"
+                    autocorrect="off"
+                    spellcheck="false"
+                    placeholder="Benutzername eingeben"
+                    required>
+
+            </div>
+
+
+            <div class="field">
+
+                <label for="mobile-password">
+                    Passwort
+                </label>
+
+                <div class="password-wrap">
+
+                    <input
+                        id="mobile-password"
+                        name="password"
+                        type="password"
+                        autocomplete="current-password"
+                        placeholder="Passwort eingeben"
+                        required>
+
+                    <button
+                        type="button"
+                        class="password-eye"
+                        onclick="togglePassword(
+                            'mobile-password',
+                            this
+                        )"
+                        aria-label="Passwort anzeigen">
+
+                        👁
+
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <button
+                type="submit"
+                class="login-button">
+
+                Anmelden →
+
+            </button>
+
+
+            {% if error %}
+
+            <div class="error">
+                {{ error }}
+            </div>
+
+            {% endif %}
+
+
+        </form>
+
+    </div>
+
+</div>
+
+
+
+<script>
+
+function togglePassword(id, button) {
+
+    const input =
+        document.getElementById(id);
+
+    if (!input) {
+        return;
+    }
+
+    if (input.type === "password") {
+
+        input.type = "text";
+
+        button.textContent = "🙈";
+
+        button.setAttribute(
+            "aria-label",
+            "Passwort verbergen"
+        );
+
+    } else {
+
+        input.type = "password";
+
+        button.textContent = "👁";
+
+        button.setAttribute(
+            "aria-label",
+            "Passwort anzeigen"
+        );
+
+    }
+}
+
+</script>
+
+
+</body>
+</html>
