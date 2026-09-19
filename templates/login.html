@@ -2,621 +2,255 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-
-<meta name="viewport"
-      content="width=device-width, initial-scale=1, viewport-fit=cover">
-
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#062b43">
-
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
 
 <title>ENTLASS-CONNECT · Anmeldung</title>
 
 <style>
+*{box-sizing:border-box}
 
-* {
-    box-sizing: border-box;
+html,body{
+    margin:0;
+    padding:0;
+    width:100%;
+    min-height:100%;
+    font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    background:#062b43;
 }
 
-html,
-body {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    min-height: 100%;
-    font-family:
-        Inter,
-        system-ui,
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        sans-serif;
-    background: #062b43;
+body{
+    overflow:hidden;
 }
-
-body {
-    overflow-x: hidden;
-}
-
 
 /* =====================================================
-   DESKTOP
+   DESKTOP — ORIGINAL ENTLASS-CONNECT ARTWORK
+   The artwork already contains the logo, van, road,
+   Frankfurt skyline and decorative right-side curves.
    ===================================================== */
 
-.desktop-login {
-    position: relative;
-    width: 100%;
-    min-height: 100vh;
-    min-height: 100dvh;
+.desktop-login{
+    position:relative;
+    width:100%;
+    height:100dvh;
+    min-height:700px;
+    overflow:hidden;
 
-    display: flex;
-    align-items: stretch;
-    justify-content: center;
-
-    background:
-        linear-gradient(
-            135deg,
-            #062b43 0%,
-            #073c57 55%,
-            #075d68 100%
-        );
-
-    overflow: hidden;
+    background:#062b43 url("{{ url_for('static', filename='login-background.png') }}")
+               center center / cover no-repeat;
 }
-
-
-/* =====================================================
-   DECORATIVE ROAD
-   ===================================================== */
-
-.desktop-login::after {
-    content: "";
-    position: absolute;
-
-    left: -5%;
-    bottom: -18%;
-
-    width: 62%;
-    height: 58%;
-
-    border-top: 5px solid rgba(255,255,255,.20);
-    border-right: 5px solid rgba(33,215,207,.35);
-
-    border-radius: 0 75% 0 0;
-
-    transform: rotate(-9deg);
-
-    opacity: .75;
-
-    pointer-events: none;
-    z-index: 1;
-}
-
-
-/* =====================================================
-   BRAND AREA
-   ===================================================== */
-
-.brand-image {
-    position: absolute;
-
-    top: 8%;
-    left: 5%;
-
-    width: min(650px, 48vw);
-
-    z-index: 3;
-
-    pointer-events: none;
-}
-
-.brand-image img {
-    display: block;
-
-    width: 100%;
-    height: auto;
-
-    object-fit: contain;
-
-    filter:
-        drop-shadow(
-            0 18px 35px
-            rgba(0,0,0,.22)
-        );
-}
-
 
 /* =====================================================
    LOGIN CARD
+   Positioned on the empty right side of the artwork.
    ===================================================== */
 
-.login-card {
-    position: absolute;
+.login-card{
+    position:absolute;
+    z-index:10;
 
-    top: 50%;
-    right: 6%;
+    top:50%;
+    right:5.2%;
+    transform:translateY(-50%);
 
-    left: auto;
+    width:min(460px, 31vw);
 
-    transform: translateY(-50%);
-
-    width: min(460px, 38vw);
-
-    padding: 42px 42px 38px;
+    padding:42px 42px 38px;
 
     background:
         linear-gradient(
             145deg,
-            rgba(35,82,119,.98),
-            rgba(8,45,70,.98)
+            rgba(35,82,119,.96),
+            rgba(8,45,70,.97)
         );
 
-    border:
-        1px solid
-        rgba(255,255,255,.20);
-
-    border-radius: 28px;
+    border:1px solid rgba(255,255,255,.22);
+    border-radius:28px;
 
     box-shadow:
-        0 30px 80px
-        rgba(0,0,0,.38);
-
-    z-index: 10;
+        0 30px 80px rgba(0,0,0,.40);
 }
 
-.login-card h2 {
-    margin: 0 0 12px;
-
-    text-align: center;
-
-    color: #ffffff;
-
-    font-size: 14px;
-
-    letter-spacing: 4px;
-
-    font-weight: 800;
+.login-card h2{
+    margin:0 0 12px;
+    text-align:center;
+    color:#fff;
+    font-size:14px;
+    letter-spacing:4px;
+    font-weight:800;
 }
 
-.login-card h1 {
-    margin: 0 0 14px;
-
-    text-align: center;
-
-    color: #ffffff;
-
-    font-size: clamp(36px, 3.2vw, 50px);
-
-    line-height: 1.05;
-
-    font-weight: 800;
+.login-card h1{
+    margin:0 0 14px;
+    text-align:center;
+    color:#fff;
+    font-size:clamp(36px,3.0vw,50px);
+    line-height:1.05;
+    font-weight:800;
 }
 
-.login-description {
-    margin: 0 0 32px;
-
-    text-align: center;
-
-    color:
-        rgba(255,255,255,.82);
-
-    font-size: 16px;
-
-    line-height: 1.5;
+.login-description{
+    margin:0 0 32px;
+    text-align:center;
+    color:rgba(255,255,255,.82);
+    font-size:16px;
+    line-height:1.5;
 }
-
 
 /* =====================================================
    FORM
    ===================================================== */
 
-.login-form {
-    width: 100%;
+.login-form{
+    width:100%;
 }
 
-.field {
-    margin-bottom: 19px;
+.field{
+    margin-bottom:19px;
 }
 
-.field label {
-    display: block;
-
-    margin-bottom: 8px;
-
-    color: #ffffff;
-
-    font-size: 14px;
-
-    font-weight: 700;
+.field label{
+    display:block;
+    margin-bottom:8px;
+    color:#fff;
+    font-size:14px;
+    font-weight:700;
 }
 
-.field input {
-    box-sizing: border-box;
+.field input{
+    width:100%;
+    height:58px;
+    padding:0 18px;
 
-    width: 100%;
-    height: 58px;
+    border:1px solid rgba(255,255,255,.28);
+    border-radius:14px;
 
-    padding: 0 18px;
+    background:rgba(205,220,232,.88);
+    color:#12384f;
 
-    border:
-        1px solid
-        rgba(255,255,255,.28);
+    font-size:16px;
+    outline:none;
 
-    border-radius: 14px;
-
-    background:
-        rgba(205,220,232,.82);
-
-    color: #12384f;
-
-    font-size: 16px;
-
-    outline: none;
-
-    transition:
-        border-color .2s,
-        box-shadow .2s;
+    transition:border-color .2s,box-shadow .2s;
 }
 
-.field input::placeholder {
-    color:
-        rgba(40,65,82,.58);
+.field input::placeholder{
+    color:rgba(40,65,82,.58);
 }
 
-.field input:focus {
-    border-color: #21d7cf;
-
-    box-shadow:
-        0 0 0 3px
-        rgba(33,215,207,.18);
+.field input:focus{
+    border-color:#21d7cf;
+    box-shadow:0 0 0 3px rgba(33,215,207,.18);
 }
 
-.password-wrap {
-    position: relative;
+.password-wrap{
+    position:relative;
 }
 
-.password-wrap input {
-    padding-right: 54px;
+.password-wrap input{
+    padding-right:54px;
 }
 
-.password-eye {
-    position: absolute;
+.password-eye{
+    position:absolute;
+    right:5px;
+    top:6px;
 
-    right: 5px;
-    top: 6px;
+    width:46px;
+    height:46px;
 
-    width: 46px;
-    height: 46px;
+    border:0;
+    background:transparent;
 
-    border: 0;
-
-    background: transparent;
-
-    cursor: pointer;
-
-    font-size: 19px;
-
-    color: #ffffff;
+    cursor:pointer;
+    font-size:19px;
+    color:#fff;
 }
-
 
 /* =====================================================
    BUTTON
    ===================================================== */
 
-.login-button {
-    width: 100%;
-    height: 58px;
+.login-button{
+    width:100%;
+    height:58px;
+    margin-top:9px;
 
-    margin-top: 9px;
+    border:0;
+    border-radius:14px;
 
-    border: 0;
-    border-radius: 14px;
+    background:linear-gradient(135deg,#13d6cb 0%,#18bcae 100%);
+    color:#fff;
 
-    background:
-        linear-gradient(
-            135deg,
-            #13d6cb 0%,
-            #18bcae 100%
-        );
+    font-size:17px;
+    font-weight:800;
 
-    color: #ffffff;
+    cursor:pointer;
 
-    font-size: 17px;
-
-    font-weight: 800;
-
-    cursor: pointer;
-
-    box-shadow:
-        0 10px 26px
-        rgba(10,210,195,.25);
-
-    transition:
-        transform .15s,
-        box-shadow .15s;
+    box-shadow:0 10px 26px rgba(10,210,195,.25);
+    transition:transform .15s,box-shadow .15s;
 }
 
-.login-button:hover {
-    box-shadow:
-        0 14px 32px
-        rgba(10,210,195,.38);
+.login-button:hover{
+    box-shadow:0 14px 32px rgba(10,210,195,.38);
 }
 
-.login-button:active {
-    transform: translateY(1px);
+.login-button:active{
+    transform:translateY(1px);
 }
-
 
 /* =====================================================
    ERROR
    ===================================================== */
 
-.error {
-    margin-top: 14px;
+.error{
+    margin-top:14px;
+    padding:11px;
 
-    padding: 11px;
+    border-radius:10px;
 
-    border-radius: 10px;
+    background:rgba(255,70,80,.15);
+    border:1px solid rgba(255,120,130,.25);
 
-    background:
-        rgba(255,70,80,.15);
-
-    border:
-        1px solid
-        rgba(255,120,130,.25);
-
-    color: #ffffff;
-
-    font-size: 13px;
-
-    text-align: center;
-
-    font-weight: 700;
+    color:#fff;
+    font-size:13px;
+    text-align:center;
+    font-weight:700;
 }
-
 
 /* =====================================================
-   MOBILE
+   PC / LAPTOP RESPONSIVE
    ===================================================== */
 
-.mobile-login {
-    display: none;
-}
-
-@media (max-width: 700px) {
-
-    .desktop-login {
-        display: none;
-    }
-
-    .mobile-login {
-        display: block;
-
-        width: 100%;
-        min-height: 100dvh;
-
-        background: #062b43;
-
-        overflow: hidden;
-    }
-
-    .mobile-brand {
-        position: relative;
-
-        width: 100%;
-
-        background: #062b43;
-
-        display: flex;
-
-        justify-content: center;
-
-        align-items: flex-start;
-
-        padding: 0;
-
-        overflow: hidden;
-    }
-
-    .mobile-brand img {
-        display: block;
-
-        width: 100%;
-        height: auto;
-
-        object-fit: contain;
-    }
-
-    .mobile-login-panel {
-        position: relative;
-
-        width: 100%;
-
-        padding:
-            34px
-            24px
-            45px;
-
-        background:
-            linear-gradient(
-                145deg,
-                #24547c 0%,
-                #123f62 55%,
-                #08354f 100%
-            );
-
-        border-top:
-            1px solid
-            rgba(255,255,255,.20);
-
-        border-radius:
-            28px 28px 0 0;
-
-        box-shadow:
-            0 -15px 45px
-            rgba(0,0,0,.25);
-    }
-
-    .mobile-login-panel h2 {
-        margin: 0 0 10px;
-
-        text-align: center;
-
-        color: #ffffff;
-
-        font-size: 13px;
-
-        letter-spacing: 4px;
-
-        font-weight: 800;
-    }
-
-    .mobile-login-panel h1 {
-        margin: 0 0 12px;
-
-        text-align: center;
-
-        color: #ffffff;
-
-        font-size: 42px;
-
-        line-height: 1;
-
-        font-weight: 800;
-    }
-
-    .mobile-description {
-        margin:
-            0 auto
-            30px;
-
-        max-width: 330px;
-
-        text-align: center;
-
-        color:
-            rgba(255,255,255,.78);
-
-        font-size: 16px;
-
-        line-height: 1.45;
-    }
-
-    .mobile-form {
-        width: 100%;
-
-        max-width: 520px;
-
-        margin: 0 auto;
-    }
-
-    .mobile-form .field {
-        margin-bottom: 18px;
-    }
-
-    .mobile-form .field label {
-        color: #ffffff;
-
-        font-size: 14px;
-
-        margin-bottom: 8px;
-    }
-
-    .mobile-form .field input {
-        height: 56px;
-
-        border-radius: 14px;
-
-        background:
-            rgba(194,213,228,.72);
-
-        font-size: 16px;
-    }
-
-    .mobile-form .login-button {
-        height: 56px;
-
-        border-radius: 14px;
-
-        margin-top: 4px;
+@media (max-width:1200px){
+    .login-card{
+        right:3%;
+        width:390px;
+        padding:34px 32px 32px;
     }
 }
 
-@media (max-width: 390px) {
-
-    .mobile-login-panel {
-        padding:
-            30px
-            20px
-            40px;
-    }
-
-    .mobile-login-panel h1 {
-        font-size: 38px;
-    }
-
-    .mobile-description {
-        font-size: 15px;
-    }
-
-    .mobile-form .field input {
-        height: 52px;
-
-        font-size: 15px;
-    }
-
-    .mobile-form .login-button {
-        height: 52px;
+@media (max-width:900px){
+    /*
+      The Flask app routes phones/tablets to
+      login_mobile_.html, so this template intentionally
+      remains the desktop version.
+    */
+    .login-card{
+        right:2%;
+        width:370px;
     }
 }
-
-@supports (padding: env(safe-area-inset-top)) {
-
-    .mobile-login {
-        padding-top:
-            env(safe-area-inset-top);
-    }
-
-}
-
 </style>
-
-<!-- =====================================================
-     MOBILE OVERRIDE
-     iOS + ANDROID ONLY
-     Desktop bleibt unverändert
-     ===================================================== -->
-<link rel="stylesheet"
-      href="{{ url_for('static', filename='css/mobile-login-ios-android.css') }}?v=20260918">
-
 </head>
-
 
 <body>
 
-
-<!-- =====================================================
-     DESKTOP LOGIN
-     ===================================================== -->
-
 <div class="desktop-login">
-
-    <div class="brand-image">
-
-        <img
-            src="/static/login-brand-final-dark.png"
-            alt="ENTLASS-CONNECT">
-
-    </div>
-
 
     <div class="login-card">
 
-        <h2>
-            SICHER ANMELDEN
-        </h2>
+        <h2>SICHER ANMELDEN</h2>
 
         <h1>
             Willkommen<br>
@@ -628,15 +262,13 @@ body {
             ENTLASS-CONNECT Zugang an.
         </p>
 
-
         <form
             class="login-form"
             method="post"
+            action="{{ url_for('login') }}"
             autocomplete="on">
 
-
             <div class="field">
-
                 <label for="desktop-username">
                     Benutzername
                 </label>
@@ -651,18 +283,14 @@ body {
                     spellcheck="false"
                     placeholder="Benutzername eingeben"
                     required>
-
             </div>
 
-
             <div class="field">
-
                 <label for="desktop-password">
                     Passwort
                 </label>
 
                 <div class="password-wrap">
-
                     <input
                         id="desktop-password"
                         name="password"
@@ -674,203 +302,46 @@ body {
                     <button
                         type="button"
                         class="password-eye"
-                        onclick="togglePassword(
-                            'desktop-password',
-                            this
-                        )"
+                        onclick="togglePassword('desktop-password', this)"
                         aria-label="Passwort anzeigen">
-
                         👁
-
                     </button>
-
                 </div>
-
             </div>
-
 
             <button
                 type="submit"
                 class="login-button">
-
                 Anmelden →
-
             </button>
 
-
             {% if error %}
-
             <div class="error">
                 {{ error }}
             </div>
-
             {% endif %}
 
-
         </form>
-
     </div>
 
 </div>
-
-
-
-<!-- =====================================================
-     MOBILE LOGIN
-     ===================================================== -->
-
-<div class="mobile-login">
-
-
-    <div class="mobile-brand">
-
-        <img
-            src="/static/login-brand-final-dark.png"
-            alt="ENTLASS-CONNECT">
-
-    </div>
-
-
-    <div class="mobile-login-panel">
-
-        <h2>
-            SICHER ANMELDEN
-        </h2>
-
-        <h1>
-            Anmelden
-        </h1>
-
-        <p class="mobile-description">
-            Bitte melden Sie sich mit Ihrem
-            Benutzerkonto an.
-        </p>
-
-
-        <form
-            class="mobile-form"
-            method="post"
-            autocomplete="on">
-
-
-            <div class="field">
-
-                <label for="mobile-username">
-                    Benutzername
-                </label>
-
-                <input
-                    id="mobile-username"
-                    name="username"
-                    type="text"
-                    autocomplete="username"
-                    autocapitalize="none"
-                    autocorrect="off"
-                    spellcheck="false"
-                    placeholder="Benutzername eingeben"
-                    required>
-
-            </div>
-
-
-            <div class="field">
-
-                <label for="mobile-password">
-                    Passwort
-                </label>
-
-                <div class="password-wrap">
-
-                    <input
-                        id="mobile-password"
-                        name="password"
-                        type="password"
-                        autocomplete="current-password"
-                        placeholder="Passwort eingeben"
-                        required>
-
-                    <button
-                        type="button"
-                        class="password-eye"
-                        onclick="togglePassword(
-                            'mobile-password',
-                            this
-                        )"
-                        aria-label="Passwort anzeigen">
-
-                        👁
-
-                    </button>
-
-                </div>
-
-            </div>
-
-
-            <button
-                type="submit"
-                class="login-button">
-
-                Anmelden →
-
-            </button>
-
-
-            {% if error %}
-
-            <div class="error">
-                {{ error }}
-            </div>
-
-            {% endif %}
-
-
-        </form>
-
-    </div>
-
-</div>
-
-
 
 <script>
+function togglePassword(id, button){
+    const input=document.getElementById(id);
+    if(!input) return;
 
-function togglePassword(id, button) {
-
-    const input =
-        document.getElementById(id);
-
-    if (!input) {
-        return;
-    }
-
-    if (input.type === "password") {
-
-        input.type = "text";
-
-        button.textContent = "🙈";
-
-        button.setAttribute(
-            "aria-label",
-            "Passwort verbergen"
-        );
-
-    } else {
-
-        input.type = "password";
-
-        button.textContent = "👁";
-
-        button.setAttribute(
-            "aria-label",
-            "Passwort anzeigen"
-        );
-
+    if(input.type==="password"){
+        input.type="text";
+        button.textContent="🙈";
+        button.setAttribute("aria-label","Passwort verbergen");
+    }else{
+        input.type="password";
+        button.textContent="👁";
+        button.setAttribute("aria-label","Passwort anzeigen");
     }
 }
-
 </script>
-
 
 </body>
 </html>
