@@ -492,8 +492,14 @@ def dashboard():
         return redirect(url_for("driver"))
 
     c=db()
-    orders=c.execute("""SELECT o.*, d.name driver_name FROM orders o LEFT JOIN drivers d ON d.id=o.driver_id
-                       ORDER BY o.id DESC LIMIT 50""").fetchall()
+    # Dashboard templates use order_id for links/actions, while the
+    # database primary key is orders.id. Expose both names so the
+    # existing dashboard UI keeps working without changing its routes.
+    orders=c.execute("""SELECT o.*, o.id AS order_id, d.name AS driver_name
+                       FROM orders o
+                       LEFT JOIN drivers d ON d.id=o.driver_id
+                       ORDER BY o.id DESC
+                       LIMIT 50""").fetchall()
     drivers=c.execute("SELECT * FROM drivers ORDER BY capability,name").fetchall()
     alerts=c.execute("SELECT * FROM orders WHERE status IN ('PROBLEM') OR status='NEW' ORDER BY id DESC LIMIT 10").fetchall()
     invoices=c.execute("SELECT * FROM invoices ORDER BY id DESC LIMIT 10").fetchall()
