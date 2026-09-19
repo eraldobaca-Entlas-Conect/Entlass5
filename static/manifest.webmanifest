@@ -1,0 +1,13 @@
+{
+  "name": "ENTLASS-CONNECT",
+  "short_name": "ENTLASS-CONNECT",
+  "start_url": "/login",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#063b55",
+  "theme_color": "#063b55",
+  "icons": [
+    {"src": "/static/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "/static/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"}
+  ]
+}
