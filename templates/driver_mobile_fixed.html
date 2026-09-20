@@ -1,0 +1,659 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+/* ENTLASS-CONNECT Fahrer Mobile UI
+   Design only. Backend routes/forms unchanged. */
+
+.driverpage{
+  width:100%;
+  max-width:1100px;
+  margin:0 auto;
+  padding:0;
+  box-sizing:border-box;
+  color:#193b39;
+}
+
+.driverpage *{box-sizing:border-box}
+
+.ec-driver-head{
+  background:linear-gradient(135deg,#073a5a 0%,#087080 58%,#1fa58f 100%);
+  color:#fff;
+  border-radius:20px;
+  padding:20px;
+  margin:0 0 12px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  box-shadow:0 12px 30px rgba(7,58,90,.14);
+}
+
+.ec-driver-head .eyebrow{
+  color:#82e2c4;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:1.7px;
+}
+
+.ec-driver-head h1{
+  color:#fff;
+  margin:4px 0 3px;
+  font-size:32px;
+  line-height:1.05;
+}
+
+.ec-driver-head p{
+  color:#d5eeee;
+  margin:0;
+  font-size:13px;
+}
+
+.ec-shift-btn{
+  border:0;
+  border-radius:12px;
+  padding:12px 18px;
+  background:#d94a55;
+  color:#fff;
+  font-weight:900;
+  white-space:nowrap;
+  cursor:pointer;
+}
+
+.ec-driver-card{
+  background:#fff;
+  border:1px solid #dce9e6;
+  border-radius:18px;
+  padding:16px;
+  margin:0 0 12px;
+  box-shadow:0 10px 25px rgba(7,58,90,.07);
+}
+
+.ec-section-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  margin:0 0 8px;
+}
+
+.ec-section-head h2{
+  margin:0;
+  color:#193b39;
+  font-size:20px;
+}
+
+.ec-status{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:7px 10px;
+  border-radius:999px;
+  background:#e2f6eb;
+  color:#237653;
+  font-size:11px;
+  font-weight:900;
+  white-space:nowrap;
+}
+
+.ec-status-dot{
+  width:9px;
+  height:9px;
+  border-radius:50%;
+  background:#22bd57;
+}
+
+.ec-muted{
+  margin:0 0 9px;
+  color:#71817f;
+  font-size:12px;
+}
+
+.ec-permissions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:7px;
+}
+
+.ec-permission{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  min-height:34px;
+  margin:0;
+  color:#36504d;
+  font-size:12px;
+  font-weight:800;
+}
+
+.ec-permission input{
+  width:18px;
+  height:18px;
+  margin:0;
+  accent-color:#168fe7;
+}
+
+.ec-save{
+  grid-column:1/-1;
+  width:100%;
+  min-height:38px;
+  border:0;
+  border-radius:11px;
+  background:#e7f3f0;
+  color:#28685f;
+  font-weight:900;
+  cursor:pointer;
+}
+
+.ec-active{
+  background:linear-gradient(135deg,#0b6470,#1fa58f);
+  color:#fff;
+  border-radius:18px;
+  padding:14px;
+  margin:0 0 12px;
+  box-shadow:0 12px 30px rgba(31,165,143,.18);
+}
+
+.ec-active .ec-order-no{
+  font-size:11px;
+  font-weight:900;
+  color:#d8f1eb;
+}
+
+.ec-active h2{
+  margin:4px 0 9px;
+  color:#fff;
+  font-size:20px;
+}
+
+.ec-route-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:7px;
+}
+
+.ec-route-box{
+  min-width:0;
+  background:#fff;
+  color:#193b39;
+  border:1px solid #d8e5e2;
+  border-radius:11px;
+  padding:9px;
+}
+
+.ec-route-box small{
+  display:block;
+  margin-bottom:3px;
+  color:#58706c;
+  font-size:8px;
+  font-weight:900;
+  letter-spacing:.5px;
+}
+
+.ec-route-box b{
+  display:block;
+  color:#193b39;
+  font-size:11px;
+  line-height:1.2;
+  overflow-wrap:anywhere;
+}
+
+.ec-main-btn{
+  display:block;
+  width:100%;
+  min-height:38px;
+  margin-top:7px;
+  padding:9px 10px;
+  border:0;
+  border-radius:11px;
+  background:linear-gradient(135deg,#1c9e8c,#35bb78);
+  color:#fff !important;
+  text-align:center;
+  font-size:11px;
+  font-weight:900;
+  cursor:pointer;
+  text-decoration:none;
+}
+
+.ec-light-btn{
+  background:#e7f3f0 !important;
+  color:#28685f !important;
+  box-shadow:none;
+}
+
+.ec-problem{
+  width:100%;
+  min-height:34px;
+  margin-top:7px;
+  padding:7px 9px;
+  border:1px solid #d8e5e2;
+  border-radius:9px;
+  background:#fff;
+  color:#193b39;
+  font-size:11px;
+}
+
+.ec-offer{
+  border:1px solid #dce9e6;
+  border-radius:13px;
+  padding:10px;
+  margin-top:7px;
+  background:#fff;
+}
+
+.ec-offer b,
+.ec-offer h3{
+  color:#193b39;
+}
+
+.ec-offer h3{
+  margin:4px 0;
+  font-size:13px;
+}
+
+.ec-offer p{
+  margin:0;
+  color:#71817f;
+  font-size:10px;
+}
+
+.ec-tag{
+  display:inline-block;
+  margin-top:6px;
+  padding:5px 8px;
+  border-radius:999px;
+  background:#e7f3f0;
+  color:#28685f;
+  font-size:9px;
+  font-weight:900;
+}
+
+.ec-empty{
+  margin:0;
+  padding:25px 10px;
+  text-align:center;
+  color:#71817f;
+  font-size:13px;
+}
+
+.ec-bottom-actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:7px;
+}
+
+.ec-bottom-actions .ec-main-btn{
+  margin:0;
+}
+
+.ec-gps-msg{
+  margin:3px 0 0;
+  color:#71817f;
+  font-size:10px;
+  text-align:center;
+}
+
+@media (min-width:901px){
+  .driverpage{
+    padding:0;
+  }
+
+  .ec-bottom-actions{
+    max-width:500px;
+  }
+}
+
+@media (max-width:900px){
+  html,body{
+    width:100%;
+    overflow:hidden;
+    -webkit-text-size-adjust:100%;
+  }
+
+  body:has(.driverpage) .app-content{
+    height:calc(100dvh - 122px);
+    min-height:0;
+    overflow:hidden;
+    padding:7px 9px 8px;
+  }
+
+  body:has(.driverpage) .app-topbar{
+    height:50px;
+    top:72px;
+  }
+
+  .driverpage{
+    height:100%;
+    max-height:100%;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    overflow:hidden;
+  }
+
+  .ec-driver-head{
+    flex:0 0 auto;
+    padding:11px 12px;
+    margin:0;
+    border-radius:15px;
+    min-height:72px;
+  }
+
+  .ec-driver-head .eyebrow{font-size:8px}
+  .ec-driver-head h1{font-size:22px}
+  .ec-driver-head p{font-size:10px}
+
+  .ec-shift-btn{
+    padding:9px 10px;
+    min-width:108px;
+    font-size:10px;
+  }
+
+  .ec-driver-card{
+    flex:0 0 auto;
+    padding:10px 11px;
+    margin:0;
+    border-radius:15px;
+  }
+
+  .ec-section-head{margin-bottom:4px}
+  .ec-section-head h2{font-size:17px}
+  .ec-status{font-size:9px;padding:5px 8px}
+  .ec-status-dot{width:8px;height:8px}
+  .ec-muted{
+    font-size:9px;
+    margin-bottom:4px;
+    white-space:nowrap;
+  }
+
+  .ec-permissions{
+    gap:3px 7px;
+  }
+
+  .ec-permission{
+    min-height:25px;
+    font-size:9px;
+  }
+
+  .ec-permission input{
+    width:16px;
+    height:16px;
+  }
+
+  .ec-save{
+    min-height:30px;
+    font-size:9px;
+  }
+
+  .ec-active{
+    flex:1 1 auto;
+    min-height:0;
+    overflow:auto;
+    margin:0;
+    padding:10px;
+    border-radius:15px;
+  }
+
+  .ec-active h2{font-size:17px}
+  .ec-route-grid{gap:5px}
+  .ec-route-box{padding:7px;border-radius:9px}
+  .ec-route-box small{font-size:7px}
+  .ec-route-box b{font-size:9px}
+
+  .ec-main-btn{
+    min-height:31px;
+    padding:7px;
+    margin-top:5px;
+    font-size:9px;
+  }
+
+  .ec-problem{
+    min-height:29px;
+    margin-top:5px;
+    font-size:9px;
+  }
+
+  .driverpage > .ec-driver-card.orders-card{
+    flex:1 1 auto;
+    min-height:0;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+  }
+
+  .orders-list{
+    min-height:0;
+    overflow:auto;
+  }
+
+  .ec-offer{
+    padding:8px;
+    margin-top:5px;
+  }
+
+  .ec-offer h3{font-size:11px}
+  .ec-offer p{font-size:9px}
+  .ec-tag{font-size:8px;padding:4px 6px}
+
+  .ec-empty{
+    flex:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:8px;
+    font-size:11px;
+  }
+
+  .ec-bottom-actions{
+    flex:0 0 auto;
+    gap:5px;
+  }
+
+  .ec-bottom-actions .ec-main-btn{
+    min-height:31px;
+    font-size:9px;
+  }
+
+  .ec-gps-msg{
+    display:none;
+  }
+
+  /* Hide old standalone mobile navigation to avoid duplicates. */
+  .driver-mobile-nav{
+    display:none !important;
+  }
+}
+
+@media (max-width:430px){
+  .ec-driver-head h1{font-size:20px}
+  .ec-driver-head{padding:9px 10px;min-height:66px}
+  .ec-shift-btn{min-width:101px;padding:8px;font-size:9px}
+  .ec-driver-card{padding:9px 10px}
+  .ec-section-head h2{font-size:16px}
+}
+</style>
+
+<main class="driverpage">
+
+  <section class="ec-driver-head">
+    <div>
+      <span class="eyebrow">ENTLASS-CONNECT</span>
+      <h1>Fahrer-Dashboard</h1>
+      <p>{{driver.name}} &middot; {{driver.capability|capitalize}}</p>
+    </div>
+
+    <form method="post" action="{{url_for('driver_availability')}}">
+      <input type="hidden" name="available" value="{{0 if driver.shift_active else 1}}">
+      <button class="ec-shift-btn" type="submit">{{'Schicht beenden' if driver.shift_active else 'Schicht starten'}}</button>
+    </form>
+  </section>
+
+  <section class="ec-driver-card">
+    <div class="ec-section-head">
+      <h2>Fahrerstatus</h2>
+      <span class="ec-status">
+        <span class="ec-status-dot"></span>
+        {{'VERF&Uuml;GBAR' if driver.shift_active and driver.available else 'INAKTIV'}}
+      </span>
+    </div>
+
+    <p class="ec-muted">
+      Schicht: {{'Aktiv' if driver.shift_active else 'Nicht aktiv'}}
+      &middot; GPS: {{'bereit' if driver.gps_enabled else 'nicht aktiviert'}}
+      &middot; Push: {{'aktiv' if driver.notification_enabled else 'nicht aktiviert'}}
+    </p>
+
+    <form class="ec-permissions" method="post" action="{{url_for('driver_permissions')}}">
+      <label class="ec-permission">
+        <input type="checkbox" name="notifications" value="1" {% if driver.notification_enabled %}checked{% endif %}>
+        Benachrichtigungen erlauben
+      </label>
+
+      <label class="ec-permission">
+        <input type="checkbox" name="gps" value="1" {% if driver.gps_enabled %}checked{% endif %}>
+        GPS erlauben
+      </label>
+
+      <button class="ec-save" type="submit">Berechtigungen speichern</button>
+    </form>
+  </section>
+
+  {% if active %}
+  <section class="ec-active">
+    <span class="ec-order-no">AUFTRAG {{active.order_no}}</span>
+    <h2>{{active.status|replace('_',' ')|title}}</h2>
+
+    <div class="ec-route-grid">
+      <div class="ec-route-box">
+        <small>ABHOLORT</small>
+        <b>{{active.pickup}}</b>
+      </div>
+      <div class="ec-route-box">
+        <small>ZIEL</small>
+        <b>{{active.destination}}</b>
+      </div>
+      <div class="ec-route-box">
+        <small>TRANSPORTART</small>
+        <b>{{active.transport_type|capitalize}}</b>
+      </div>
+      <div class="ec-route-box">
+        <small>TERMIN</small>
+        <b>{{active.date}} &middot; {{active.pickup_time}}</b>
+      </div>
+    </div>
+
+    {% if active.status in ['ACCEPTED','TO_PICKUP','OFFERED'] %}
+      <a class="ec-main-btn" href="https://www.google.com/maps/dir/?api=1&destination={{active.pickup|urlencode}}" target="_blank" rel="noopener">Route zum Abholort</a>
+    {% elif active.status in ['PICKED_UP','TO_DESTINATION','ARRIVED'] %}
+      <a class="ec-main-btn" href="https://www.google.com/maps/dir/?api=1&destination={{active.destination|urlencode}}" target="_blank" rel="noopener">Route zum Ziel</a>
+    {% endif %}
+
+    {% if active.status!='OFFERED' %}
+    <form method="post" action="{{url_for('driver_status',order_id=active.id)}}">
+      <button class="ec-main-btn ec-light-btn" type="submit">
+        N&auml;chster Schritt:
+        {{ {'ACCEPTED':'Unterwegs zum Abholort','TO_PICKUP':'Patient abgeholt','PICKED_UP':'Unterwegs zum Ziel','TO_DESTINATION':'Angekommen','ARRIVED':'Transport abschlie&szlig;en'}.get(active.status,'Weiter') }}
+      </button>
+    </form>
+    {% endif %}
+
+    <form method="post" action="{{url_for('driver_problem',order_id=active.id)}}">
+      <select class="ec-problem" name="problem">
+        <option>Patient nicht angetroffen</option>
+        <option>Fahrzeugproblem</option>
+        <option>Adresse falsch</option>
+        <option>Versp&auml;tung</option>
+        <option>Sonstiges</option>
+      </select>
+      <button class="ec-main-btn ec-light-btn" type="submit">Problem melden</button>
+    </form>
+  </section>
+  {% endif %}
+
+  <section class="ec-driver-card orders-card">
+    <div class="ec-section-head">
+      <h2>Neue Auftr&auml;ge</h2>
+      <span class="ec-tag" style="margin-top:0">Automatisch zugewiesen</span>
+    </div>
+
+    <div class="orders-list">
+      {% for o in offers %}
+      <div class="ec-offer">
+        <div>
+          <b>{{o.order_no}}</b>
+          <h3>{{o.pickup}}</h3>
+          <p>&rarr; {{o.destination}} &middot; {{o.date}} {{o.pickup_time}}</p>
+          <span class="ec-tag">{{o.transport_type|capitalize}} &middot; 5 Min.</span>
+        </div>
+
+        <form method="post" action="{{url_for('driver_accept',order_id=o.id)}}">
+          <button class="ec-main-btn" type="submit">Auftrag annehmen</button>
+        </form>
+      </div>
+      {% else %}
+      <p class="ec-empty">Keine neuen passenden Auftr&auml;ge.</p>
+      {% endfor %}
+    </div>
+  </section>
+
+  <div class="ec-bottom-actions">
+    <a class="ec-main-btn ec-light-btn" href="{{url_for('reports')}}">Arbeitszeit-Bericht</a>
+    <button class="ec-main-btn ec-light-btn" type="button" onclick="sendGPS()">GPS aktualisieren</button>
+  </div>
+
+  <p id="gpsmsg" class="ec-gps-msg"></p>
+
+</main>
+
+<script>
+function sendGPS(){
+  const msg=document.getElementById('gpsmsg');
+
+  if(!navigator.geolocation){
+    if(msg) msg.textContent='GPS wird von diesem Ger&auml;t nicht unterst&uuml;tzt.';
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    async function(position){
+      try{
+        await fetch('/api/gps',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({
+            lat:position.coords.latitude,
+            lng:position.coords.longitude
+          })
+        });
+
+        if(msg) msg.textContent='GPS aktualisiert.';
+      }catch(e){
+        if(msg) msg.textContent='GPS konnte nicht aktualisiert werden.';
+      }
+    },
+    function(){
+      if(msg) msg.textContent='GPS-Berechtigung wurde nicht erteilt.';
+    }
+  );
+}
+
+if({{1 if driver.notification_enabled else 0}} && 'Notification' in window && Notification.permission==='default'){
+  Notification.requestPermission();
+}
+
+setInterval(async function(){
+  try{
+    const response=await fetch(location.href,{cache:'no-store'});
+    const html=await response.text();
+
+    if(
+      html.includes('Neue Auftr') &&
+      html.length > document.documentElement.innerHTML.length - 100
+    ){
+      location.reload();
+    }
+  }catch(e){}
+},10000);
+</script>
+
+{% endblock %}
