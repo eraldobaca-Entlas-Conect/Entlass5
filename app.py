@@ -169,7 +169,16 @@ def init_db():
       id INTEGER PRIMARY KEY, invoice_no TEXT UNIQUE, order_id INTEGER,
       payer TEXT, amount_cents INTEGER, pdf_path TEXT, created_at TEXT, sent_at TEXT
     );
-    CREATE TABLE IF NOT EXISTS email_log(
+        # Migration: add order_id to existing invoices tables.
+    # The invoices table in older deployments may have been created
+    # before order_id was introduced.
+    try:
+        c.execute("ALTER TABLE invoices ADD COLUMN order_id INTEGER")
+    except sqlite3.OperationalError:
+        # SQLite: column already exists.
+        pass
+        
+        CREATE TABLE IF NOT EXISTS email_log(
       id INTEGER PRIMARY KEY, order_id INTEGER, recipient TEXT, subject TEXT,
       body TEXT, created_at TEXT, sent INTEGER DEFAULT 0
     );
