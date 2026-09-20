@@ -1,60 +1,576 @@
 <!doctype html>
 <html lang="de">
+
 <head>
+
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <title>{{ title or "ENTLASS-CONNECT" }}</title>
-  <link rel="stylesheet" href="{{ url_for('static',filename='style.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static',filename='design.css') }}">
+
+  <meta
+    name="viewport"
+    content="width=device-width,initial-scale=1,viewport-fit=cover"
+  >
+
+  <title>
+    {{ title or "ENTLASS-CONNECT" }}
+  </title>
+
+  <link
+    rel="stylesheet"
+    href="{{ url_for('static',filename='style.css') }}"
+  >
+
+  <link
+    rel="stylesheet"
+    href="{{ url_for('static',filename='design.css') }}"
+  >
+
+  <style>
+
+    /* =====================================================
+       GLOBAL MOBILE TOPBAR ACTIONS
+       ===================================================== */
+
+    .ec-global-actions{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex:0 0 auto;
+    }
+
+    .ec-global-notification{
+      width:36px;
+      height:36px;
+
+      display:flex;
+      align-items:center;
+      justify-content:center;
+
+      padding:0;
+
+      border:0;
+      border-radius:10px;
+
+      background:#edf5f4;
+      color:#28685f;
+
+      font-size:17px;
+
+      cursor:pointer;
+      touch-action:manipulation;
+    }
+
+    .ec-global-notification:active{
+      transform:scale(.96);
+    }
+
+    .ec-global-logout{
+      width:40px;
+      height:36px;
+
+      display:none;
+
+      align-items:center;
+      justify-content:center;
+
+      padding:0;
+
+      border-radius:10px;
+
+      background:#e53945 !important;
+      border:2px solid #c51f2b !important;
+
+      color:#fff !important;
+
+      text-decoration:none !important;
+
+      font-size:17px;
+      font-weight:900;
+
+      cursor:pointer;
+
+      box-shadow:0 3px 8px rgba(197,31,43,.20);
+
+      touch-action:manipulation;
+    }
+
+    .ec-global-logout:hover{
+      background:#cf2634 !important;
+      color:#fff !important;
+    }
+
+    .ec-global-notification-status{
+      position:fixed;
+      left:50%;
+      bottom:calc(18px + env(safe-area-inset-bottom));
+      transform:translateX(-50%);
+
+      z-index:99999;
+
+      max-width:calc(100vw - 30px);
+
+      padding:10px 15px;
+
+      border-radius:12px;
+
+      background:#123f4d;
+      color:#fff;
+
+      font-size:12px;
+      font-weight:700;
+
+      text-align:center;
+
+      box-shadow:0 8px 25px rgba(0,0,0,.22);
+
+      display:none;
+    }
+
+    @media(max-width:900px){
+
+      /*
+       * The old top header already contains a logout.
+       * The app-topbar needs its own logout because this is
+       * the header visible on mobile reports/dashboard pages.
+       */
+
+      .ec-global-logout{
+        display:flex;
+      }
+
+      .app-topbar .meta{
+        gap:7px;
+      }
+
+      .app-topbar{
+        padding:
+          0
+          max(13px,env(safe-area-inset-right))
+          0
+          max(13px,env(safe-area-inset-left));
+      }
+
+    }
+
+  </style>
+
 </head>
+
+
 <body class="{% if session_user %}authenticated{% endif %}">
+
+
 {% if session_user %}
+
+<!-- =====================================================
+     DESKTOP / MAIN HEADER
+     ===================================================== -->
+
 <header class="top">
-  <a class="brand" href="{{ url_for('driver') if session_role=='driver' else url_for('dashboard') }}">
-    <img src="{{ url_for('static',filename='img/logo.jpeg') }}" alt="ENTLASS-CONNECT">
-    <span><b>ENTLASS</b><strong>CONNECT</strong><small>DIGITAL. SICHER. GEMEINSAM.</small></span>
+
+  <a
+    class="brand"
+    href="{{ url_for('driver') if session_role=='driver' else url_for('dashboard') }}"
+  >
+
+    <img
+      src="{{ url_for('static',filename='img/logo.jpeg') }}"
+      alt="ENTLASS-CONNECT"
+    >
+
+    <span>
+
+      <b>ENTLASS</b>
+
+      <strong>CONNECT</strong>
+
+      <small>
+        DIGITAL. SICHER. GEMEINSAM.
+      </small>
+
+    </span>
+
   </a>
-  <div class="userbar"><span class="userrole">{{ session_user }} · {{ session_role|capitalize }}</span><a class="logout" href="{{ url_for('logout') }}">Abmelden</a></div>
+
+
+  <div class="userbar">
+
+    <span class="userrole">
+      {{ session_user }} · {{ session_role|capitalize }}
+    </span>
+
+    <a
+      class="logout"
+      href="{{ url_for('logout') }}"
+    >
+      Abmelden
+    </a>
+
+  </div>
+
 </header>
+
+
+<!-- =====================================================
+     APPLICATION SHELL
+     ===================================================== -->
+
 <div class="app-shell">
+
+
+  <!-- ===================================================
+       SIDEBAR
+       =================================================== -->
+
   <aside class="app-sidebar">
-    <a class="side-brand" href="{{ url_for('driver') if session_role=='driver' else url_for('dashboard') }}"><img src="{{ url_for('static',filename='img/logo.jpeg') }}"><span><b>ENTLASS</b><strong>CONNECT</strong><small>SICHER · PÜNKTLICH · MENSCHLICH</small></span></a>
+
+    <a
+      class="side-brand"
+      href="{{ url_for('driver') if session_role=='driver' else url_for('dashboard') }}"
+    >
+
+      <img
+        src="{{ url_for('static',filename='img/logo.jpeg') }}"
+        alt="ENTLASS-CONNECT"
+      >
+
+      <span>
+
+        <b>ENTLASS</b>
+
+        <strong>CONNECT</strong>
+
+        <small>
+          SICHER · PÜNKTLICH · MENSCHLICH
+        </small>
+
+      </span>
+
+    </a>
+
+
     <nav class="side-nav">
-      <a href="{{url_for('dashboard')}}"><span class="ico">⌂</span>Dashboard</a>
-      <a href="{{url_for('new_order')}}"><span class="ico">＋</span>Aufträge</a>
-      <a href="{{url_for('dashboard')}}#tracking"><span class="ico">⌖</span>Live-Tracking</a>
+
+      <a href="{{url_for('dashboard')}}">
+        <span class="ico">⌂</span>
+        Dashboard
+      </a>
+
+      <a href="{{url_for('new_order')}}">
+        <span class="ico">＋</span>
+        Aufträge
+      </a>
+
+      <a href="{{url_for('dashboard')}}#tracking">
+        <span class="ico">⌖</span>
+        Live-Tracking
+      </a>
+
+
       {% if session_role=='driver' %}
-      <a href="{{url_for('driver')}}"><span class="ico">♟</span>Fahrer</a>
+
+      <a href="{{url_for('driver')}}">
+        <span class="ico">♟</span>
+        Fahrer
+      </a>
+
       {% else %}
-      <a href="{{url_for('dashboard')}}#fahrer"><span class="ico">♟</span>Fahrer</a>
-      <a href="{{url_for('dashboard')}}#disposition"><span class="ico">◈</span>Disposition</a>
-      <a href="{{url_for('dashboard')}}#alarme"><span class="ico">⚠</span>Alarm Center</a>
+
+      <a href="{{url_for('dashboard')}}#fahrer">
+        <span class="ico">♟</span>
+        Fahrer
+      </a>
+
+      <a href="{{url_for('dashboard')}}#disposition">
+        <span class="ico">◈</span>
+        Disposition
+      </a>
+
+      <a href="{{url_for('dashboard')}}#alarme">
+        <span class="ico">⚠</span>
+        Alarm Center
+      </a>
+
       {% endif %}
-      <a href="{{url_for('dashboard')}}#rechnungen"><span class="ico">▣</span>Rechnungen</a>
+
+
+      <a href="{{url_for('dashboard')}}#rechnungen">
+        <span class="ico">▣</span>
+        Rechnungen
+      </a>
+
+
       {% if session_role!='driver' %}
-      <a href="{{url_for('dashboard')}}#krankenhaeuser"><span class="ico">⌂</span>Krankenhäuser</a>
-      <a href="{{url_for('dashboard')}}#kostentraeger"><span class="ico">▤</span>Kostenträger</a>
+
+      <a href="{{url_for('dashboard')}}#krankenhaeuser">
+        <span class="ico">⌂</span>
+        Krankenhäuser
+      </a>
+
+      <a href="{{url_for('dashboard')}}#kostentraeger">
+        <span class="ico">▤</span>
+        Kostenträger
+      </a>
+
       {% endif %}
-      <a href="{{url_for('reports')}}"><span class="ico">▥</span>Berichte</a>
-      <a href="{{url_for('dashboard')}}#settings"><span class="ico">⚙</span>Einstellungen</a>
+
+
+      <a href="{{url_for('reports')}}">
+        <span class="ico">▥</span>
+        Berichte
+      </a>
+
+
+      <a href="{{url_for('dashboard')}}#settings">
+        <span class="ico">⚙</span>
+        Einstellungen
+      </a>
+
     </nav>
-    <div class="side-bottom"><a href="{{url_for('logout')}}"><span class="ico">↪</span> Abmelden</a></div>
+
+
+    <div class="side-bottom">
+
+      <a href="{{url_for('logout')}}">
+
+        <span class="ico">
+          ↪
+        </span>
+
+        Abmelden
+
+      </a>
+
+    </div>
+
   </aside>
+
+
+  <!-- ===================================================
+       MAIN
+       =================================================== -->
+
   <div class="app-main">
-    <div class="app-topbar"><div class="search">⌕ &nbsp; Suche...</div><div class="meta"><span>🔔</span><span>{{ session_user }}</span><span class="avatar">{{ session_user[:1]|upper }}</span></div></div>
+
+
+    <!-- =================================================
+         MOBILE / APPLICATION TOPBAR
+         ================================================= -->
+
+    <div class="app-topbar">
+
+      <div class="search">
+        ⌕ &nbsp; Suche...
+      </div>
+
+
+      <div class="meta">
+
+
+        <!-- REAL NOTIFICATION BUTTON -->
+
+        <button
+          type="button"
+          class="ec-global-notification"
+          onclick="enableNotifications()"
+          aria-label="Benachrichtigungen aktivieren"
+          title="Benachrichtigungen aktivieren"
+        >
+          🔔
+        </button>
+
+
+        <span>
+          {{ session_user }}
+        </span>
+
+
+        <span class="avatar">
+          {{ session_user[:1]|upper }}
+        </span>
+
+
+        <!-- ALWAYS RED ON MOBILE -->
+
+        <a
+          class="ec-global-logout"
+          href="{{ url_for('logout') }}"
+          aria-label="Abmelden"
+          title="Abmelden"
+        >
+          ↪
+        </a>
+
+
+      </div>
+
+    </div>
+
+
     <div class="app-content">
+
+
 {% else %}
+
 <div class="public-page">
+
 {% endif %}
+
 
 {% block content %}{% endblock %}
 
+
 {% if session_user %}
+
     </div>
+
   </div>
+
 </div>
+
 {% else %}
+
 </div>
+
 {% endif %}
+
+
+<!-- =====================================================
+     GLOBAL NOTIFICATION FUNCTION
+     ===================================================== -->
+
+<div
+  id="ecNotificationStatus"
+  class="ec-global-notification-status"
+></div>
+
+
+<script>
+
+function showECMessage(message){
+
+  const box =
+    document.getElementById(
+      'ecNotificationStatus'
+    );
+
+  if(!box){
+    return;
+  }
+
+  box.textContent = message;
+
+  box.style.display = 'block';
+
+  clearTimeout(
+    window.ecMessageTimer
+  );
+
+  window.ecMessageTimer =
+    setTimeout(
+      function(){
+
+        box.style.display =
+          'none';
+
+      },
+      3000
+    );
+
+}
+
+
+/* =====================================================
+   REAL BROWSER NOTIFICATION PERMISSION
+   ===================================================== */
+
+async function enableNotifications(){
+
+  if(
+    !('Notification' in window)
+  ){
+
+    showECMessage(
+      'Benachrichtigungen werden von diesem Browser nicht unterstützt.'
+    );
+
+    return;
+
+  }
+
+
+  try{
+
+    if(
+      Notification.permission === 'granted'
+    ){
+
+      showECMessage(
+        'Benachrichtigungen sind bereits aktiviert.'
+      );
+
+      return;
+
+    }
+
+
+    if(
+      Notification.permission === 'denied'
+    ){
+
+      showECMessage(
+        'Benachrichtigungen sind blockiert. Bitte in den Browser-Einstellungen erlauben.'
+      );
+
+      return;
+
+    }
+
+
+    const permission =
+      await Notification.requestPermission();
+
+
+    if(
+      permission === 'granted'
+    ){
+
+      showECMessage(
+        '✓ Benachrichtigungen aktiviert.'
+      );
+
+
+      try{
+
+        new Notification(
+          'ENTLASS-CONNECT',
+          {
+            body:
+              'Benachrichtigungen sind aktiviert.'
+          }
+        );
+
+      }catch(e){}
+
+    }else{
+
+      showECMessage(
+        'Benachrichtigungen wurden nicht aktiviert.'
+      );
+
+    }
+
+  }catch(error){
+
+    showECMessage(
+      'Benachrichtigungen konnten nicht aktiviert werden.'
+    );
+
+  }
+
+}
+
+</script>
+
+
 </body>
 </html>
