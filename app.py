@@ -1,4 +1,3 @@
-
 import os, secrets, sqlite3
 
 try:
@@ -127,7 +126,7 @@ class DBConn:
 def db():
     if USE_POSTGRES:
         if psycopg is None:
-            raise RuntimeError("psycopg fehlt – bitte psycopg[binary] in requirements.txt eintragen.")
+            raise RuntimeError("psycopg fehlt â bitte psycopg[binary] in requirements.txt eintragen.")
         raw = psycopg.connect(DATABASE_URL, row_factory=dict_row)
         return DBConn(raw, postgres=True)
 
@@ -201,7 +200,7 @@ def init_db():
                   (u[0], generate_password_hash(u[1]), u[2], u[3]))
     # 10 demo drivers: 2 Liege, 5 Rollstuhl, 3 Sitzend
     driver_specs = [
-      ("Max Müller","+49 151 10000001","liege"),
+      ("Max MÃ¼ller","+49 151 10000001","liege"),
       ("Anna Weber","+49 151 10000002","liege"),
       ("Peter Klein","+49 151 10000003","rollstuhl"),
       ("Sofia Becker","+49 151 10000004","rollstuhl"),
@@ -258,18 +257,18 @@ def tariff_for(order):
     2.40 EUR base + 2.35 EUR per occupied km outside mandatory fare areas
     from 01.04.2026 (the exact payer/contract and tariff area must be validated).
     For rollstuhl/liege the demo uses configurable illustrative values until
-    the specific transporter's Krankenkassenverträge are entered.
+    the specific transporter's KrankenkassenvertrÃ¤ge are entered.
     """
     km = float(order["distance_km"] or 12.4)
     t = order["transport_type"]
     if t == "sitzend":
-        return {"code":"510000", "label":"Sitzendkrankenfahrt – Grundpauschale", "base":2.40,
+        return {"code":"510000", "label":"Sitzendkrankenfahrt â Grundpauschale", "base":2.40,
                 "km_price":2.35, "km":km, "basis":"Hessen 2026 Demo-Basis"}
     if t == "rollstuhl":
-        return {"code":"R-Demo", "label":"Rollstuhltransport – Demo-Tarif", "base":19.00,
-                "km_price":2.20, "km":km, "basis":"Illustrativer Demo-Wert – Vertrag erforderlich"}
-    return {"code":"L-Demo", "label":"Liegendtransport – Demo-Tarif", "base":49.00,
-            "km_price":2.50, "km":km, "basis":"Illustrativer Demo-Wert – Vertrag erforderlich"}
+        return {"code":"R-Demo", "label":"Rollstuhltransport â Demo-Tarif", "base":19.00,
+                "km_price":2.20, "km":km, "basis":"Illustrativer Demo-Wert â Vertrag erforderlich"}
+    return {"code":"L-Demo", "label":"Liegendtransport â Demo-Tarif", "base":49.00,
+            "km_price":2.50, "km":km, "basis":"Illustrativer Demo-Wert â Vertrag erforderlich"}
 
 def make_invoice(order):
     os.makedirs("invoices", exist_ok=True)
@@ -301,7 +300,7 @@ def make_invoice(order):
         from reportlab.platypus import Image
         logo = Image(logo_path, width=62, height=62)
         header = Table([[logo, Paragraph("<b>ENTLASS</b><br/><font color='#2e9a8b'><b>CONNECT</b></font><br/><font size='8'>DIGITAL. SICHER. GEMEINSAM.</font>", styles["Normal"]),
-                        Paragraph("<b>KOSTENTRÄGERRECHNUNG</b><br/><font size='9'>Patiententransport · Demo</font>", styles["Normal"])]],
+                        Paragraph("<b>KOSTENTRÃGERRECHNUNG</b><br/><font size='9'>Patiententransport Â· Demo</font>", styles["Normal"])]],
                        colWidths=[70, 230, 210])
         header.setStyle(TableStyle([("VALIGN",(0,0),(-1,-1),"MIDDLE"),
                                     ("LINEBELOW",(0,0),(-1,-1),1,teal),
@@ -320,9 +319,9 @@ def make_invoice(order):
 
     recipient = Table([
         [Paragraph("<b>LEISTUNGSERBRINGER</b>", styles["Normal"]),
-         Paragraph("<b>KOSTENTRÄGER</b>", styles["Normal"])],
+         Paragraph("<b>KOSTENTRÃGER</b>", styles["Normal"])],
         [Paragraph("ENTLASS-CONNECT Patiententransport<br/>Demo-Fahrdienst<br/>IK: DEMO-IK-123456789", styles["Normal"]),
-         Paragraph(f"{order['payer'] or 'Krankenkasse'}<br/>Abrechnung Krankenbeförderung", styles["Normal"])]
+         Paragraph(f"{order['payer'] or 'Krankenkasse'}<br/>Abrechnung KrankenbefÃ¶rderung", styles["Normal"])]
     ], colWidths=[255,255])
     recipient.setStyle(TableStyle([
         ("BACKGROUND",(0,0),(-1,0),pale),("BOX",(0,0),(-1,-1),.6,line),
@@ -333,11 +332,11 @@ def make_invoice(order):
     story.append(Spacer(1, 15))
 
     patient = Table([
-        ["Patient / Fallnummer", order["patient_ref"] or "—", "Auftrag", order["order_no"]],
-        ["Patient", order["patient_name"] or "—", "Transportart", order["transport_type"].title()],
+        ["Patient / Fallnummer", order["patient_ref"] or "â", "Auftrag", order["order_no"]],
+        ["Patient", order["patient_name"] or "â", "Transportart", order["transport_type"].title()],
         ["Abholung", order["pickup"], "Ziel", order["destination"]],
-        ["Fahrt", f"{order['date']} · {order['pickup_time']}", "Fahrtrichtung", (order["direction"] or "hinfahrt").replace("_"," ").title()],
-        ["Versicherungs-Nr.", order["insurance_no"] or "—", "Genehmigung", order["approval"] or "—"]
+        ["Fahrt", f"{order['date']} Â· {order['pickup_time']}", "Fahrtrichtung", (order["direction"] or "hinfahrt").replace("_"," ").title()],
+        ["Versicherungs-Nr.", order["insurance_no"] or "â", "Genehmigung", order["approval"] or "â"]
     ], colWidths=[120,145,100,145])
     patient.setStyle(TableStyle([
         ("BOX",(0,0),(-1,-1),.6,line),("INNERGRID",(0,0),(-1,-1),.4,line),
@@ -351,8 +350,8 @@ def make_invoice(order):
 
     positions = [
         ["Pos.", "Leistung", "Menge", "Einzelpreis", "Gesamt"],
-        ["1", tariff["label"], "1", f"{tariff['base']:.2f} €", f"{tariff['base']:.2f} €"],
-        ["2", f"Besetzt-km ({tariff['km']:.1f} km)", f"{tariff['km']:.1f}", f"{tariff['km_price']:.2f} €", f"{tariff['km_price']*tariff['km']:.2f} €"],
+        ["1", tariff["label"], "1", f"{tariff['base']:.2f} â¬", f"{tariff['base']:.2f} â¬"],
+        ["2", f"Besetzt-km ({tariff['km']:.1f} km)", f"{tariff['km']:.1f}", f"{tariff['km_price']:.2f} â¬", f"{tariff['km_price']*tariff['km']:.2f} â¬"],
     ]
     pos = Table(positions, colWidths=[35,250,60,90,75])
     pos.setStyle(TableStyle([
@@ -366,9 +365,9 @@ def make_invoice(order):
     story.append(Spacer(1, 10))
 
     totals = Table([
-        ["Gesamt-Brutto", f"{gross:.2f} €"],
-        ["Zuzahlung Versicherter", f"- {copay:.2f} €"],
-        ["Rechnungsbetrag Kostenträger", f"{payer_amount:.2f} €"],
+        ["Gesamt-Brutto", f"{gross:.2f} â¬"],
+        ["Zuzahlung Versicherter", f"- {copay:.2f} â¬"],
+        ["Rechnungsbetrag KostentrÃ¤ger", f"{payer_amount:.2f} â¬"],
     ], colWidths=[390,120])
     totals.setStyle(TableStyle([
         ("ALIGN",(1,0),(1,-1),"RIGHT"),("BOX",(0,0),(-1,-1),.6,line),
@@ -381,17 +380,17 @@ def make_invoice(order):
 
     story.append(Paragraph(
         f"<b>Tarifgrundlage:</b> {tariff['basis']}. "
-        "Die konkrete Vergütung ist vor Produktiveinsatz anhand des jeweiligen "
+        "Die konkrete VergÃ¼tung ist vor Produktiveinsatz anhand des jeweiligen "
         "Krankenkassen-/Leistungserbringervertrags und Abrechnungswegs zu hinterlegen.",
         styles["Normal"]))
     story.append(Spacer(1, 8))
     story.append(Paragraph(
-        "Zuzahlung: grundsätzlich 10 % je Fahrt, mindestens 5,00 € und höchstens 10,00 €, "
+        "Zuzahlung: grundsÃ¤tzlich 10 % je Fahrt, mindestens 5,00 â¬ und hÃ¶chstens 10,00 â¬, "
         "soweit keine Befreiung bzw. gesetzliche Ausnahme vorliegt.",
         styles["Normal"]))
     story.append(Spacer(1, 12))
     story.append(Paragraph(
-        "<b>DEMO-DOKUMENT</b> – Diese Rechnung dient ausschließlich der Funktionsdemonstration "
+        "<b>DEMO-DOKUMENT</b> â Diese Rechnung dient ausschlieÃlich der Funktionsdemonstration "
         "von ENTLASS-CONNECT und ist keine echte Abrechnung mit einer Krankenkasse.",
         styles["Normal"]))
 
@@ -423,7 +422,7 @@ def forbidden(error):
     # If a driver reaches a stale dashboard URL, send them to the driver UI.
     if session.get("role") == "driver":
         return redirect(url_for("driver"))
-    return "403 – Zugriff verweigert", 403
+    return "403 â Zugriff verweigert", 403
 
 def is_mobile_device():
     ua = (request.headers.get("User-Agent") or "").lower()
@@ -543,10 +542,10 @@ def new_order():
             c.execute("UPDATE orders SET driver_id=?,status='OFFERED' WHERE id=?",(d["id"],oid))
             c.execute("UPDATE drivers SET last_offer_at=? WHERE id=?",(datetime.utcnow().isoformat(),d["id"]))
             c.execute("INSERT INTO events(order_id,status,note,created_at) VALUES(?,?,?,?)",
-                      (oid,"OFFERED",f"Automatisches Angebot an {d['name']} – 5 Minuten",datetime.utcnow().isoformat()))
+                      (oid,"OFFERED",f"Automatisches Angebot an {d['name']} â 5 Minuten",datetime.utcnow().isoformat()))
         else:
             c.execute("INSERT INTO events(order_id,status,note,created_at) VALUES(?,?,?,?)",
-                      (oid,"ALARM", "Kein passender Fahrer verfügbar – Dispatcher/Admin muss eingreifen.", datetime.utcnow().isoformat()))
+                      (oid,"ALARM", "Kein passender Fahrer verfÃ¼gbar â Dispatcher/Admin muss eingreifen.", datetime.utcnow().isoformat()))
         c.commit(); c.close()
 
         # Hospital users must not be redirected to the dispatcher-only /dispatch route.
@@ -593,20 +592,20 @@ def api_dispatch(order_id):
         d=c.execute("SELECT * FROM drivers WHERE id=?",(requested_driver_id,)).fetchone()
         if not d or not d["available"] or not capability_ok(d["capability"],o["transport_type"]):
             c.close()
-            return jsonify(error="Dieser Fahrer ist nicht verfügbar oder nicht für die Transportart geeignet."),409
+            return jsonify(error="Dieser Fahrer ist nicht verfÃ¼gbar oder nicht fÃ¼r die Transportart geeignet."),409
     else:
         candidates=c.execute("SELECT * FROM drivers WHERE available=1 AND shift_active=1").fetchall()
         eligible=[d for d in candidates if capability_ok(d["capability"],o["transport_type"])]
         if not eligible:
             c.close()
-            return jsonify(error="Kein passender Fahrer verfügbar. Dispatcher/Admin wird informiert.", alarm=True),409
+            return jsonify(error="Kein passender Fahrer verfÃ¼gbar. Dispatcher/Admin wird informiert.", alarm=True),409
         d=max(eligible, key=lambda x: driver_score(x,o)[0])
 
     now=datetime.utcnow().isoformat()
     c.execute("UPDATE orders SET driver_id=?,status='OFFERED' WHERE id=?",(d["id"],order_id))
     c.execute("UPDATE drivers SET last_offer_at=? WHERE id=?",(now,d["id"]))
     c.execute("INSERT INTO events(order_id,status,note,created_at) VALUES(?,?,?,?)",
-              (order_id,"OFFERED",f"Angebot an {d['name']} – 5 Minuten",now))
+              (order_id,"OFFERED",f"Angebot an {d['name']} â 5 Minuten",now))
     c.commit(); c.close()
     return jsonify(driver=d["name"],expires_in_seconds=300)
 
@@ -645,10 +644,53 @@ def driver_availability():
     c.commit(); c.close()
     return redirect(url_for("driver"))
 
-@app.post("/driver/permissions")
+@app.route("/driver/permissions", methods=["GET", "POST"])
 @login_required(["driver"])
 def driver_permissions():
-    c=db(); c.execute("UPDATE drivers SET notification_enabled=?,gps_enabled=?,last_seen=? WHERE user_id=?",(1 if request.form.get("notifications") else 0,1 if request.form.get("gps") else 0,datetime.utcnow().isoformat(),session["user_id"])); c.commit(); c.close(); return redirect(url_for("driver"))
+    # Safari/iOS can revisit this URL with GET. GET must not change
+    # permissions; it simply returns the driver to the mobile UI.
+    if request.method == "GET":
+        return redirect(url_for("driver"))
+
+    c=db()
+    c.execute(
+        "UPDATE drivers SET notification_enabled=?,gps_enabled=?,last_seen=? WHERE user_id=?",
+        (
+            1 if request.form.get("notifications") else 0,
+            1 if request.form.get("gps") else 0,
+            datetime.utcnow().isoformat(),
+            session["user_id"],
+        )
+    )
+    c.commit()
+    c.close()
+    return redirect(url_for("driver"))
+
+
+@app.get("/fahrer-sw.js")
+def fahrer_service_worker():
+    # Public service-worker endpoint: browsers must be able to fetch it
+    # without authentication. This removes the mobile 404 while keeping
+    # the existing application behavior unchanged.
+    service_worker = """
+self.addEventListener("install", function(event) {
+    self.skipWaiting();
+});
+
+self.addEventListener("activate", function(event) {
+    event.waitUntil(self.clients.claim());
+});
+
+self.addEventListener("fetch", function(event) {
+    // Network-first behavior; no application logic is changed here.
+});
+"""
+    return app.response_class(
+        service_worker,
+        mimetype="application/javascript",
+        headers={"Cache-Control": "no-cache, no-store, must-revalidate"}
+    )
+
 
 @app.post("/driver/problem/<int:order_id>")
 @login_required(["driver"])
