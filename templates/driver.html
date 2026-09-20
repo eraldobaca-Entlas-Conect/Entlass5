@@ -1,708 +1,1034 @@
 {% extends "base.html" %}
+
 {% block content %}
 
 <style>
-/* =========================================================
-   ENTLASS-CONNECT – FAHRER APP
-   Mobile-first / iOS / Android
-   Existing backend routes preserved
-   ========================================================= */
 
 .driverpage,
-.driverpage * {
-  box-sizing: border-box;
+.driverpage *{
+  box-sizing:border-box;
 }
 
-.driverpage {
-  width: 100%;
-  max-width: 620px;
-  margin: 0 auto;
-  color: #193b39;
+.driverpage{
+  width:100%;
+  max-width:620px;
+  margin:0 auto;
+  color:#193b39;
 }
 
-/* =========================================================
-   HEADER
-   ========================================================= */
 
-.ec-app-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  min-height: 62px;
-  padding: 3px 2px 8px;
-  border-bottom: 1px solid #dce8e6;
+/* =====================================================
+   DRIVER HEADER
+   ===================================================== */
+
+.ec-app-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+
+  min-height:62px;
+
+  padding:3px 2px 8px;
+
+  border-bottom:1px solid #dce8e6;
 }
 
-.ec-brand {
-  display: flex;
-  align-items: center;
-  min-width: 0;
-  gap: 8px;
+.ec-brand{
+  display:flex;
+  align-items:center;
+
+  min-width:0;
+  gap:8px;
 }
 
-.ec-brand img {
-  width: 48px;
-  height: 48px;
-  object-fit: contain;
-  border-radius: 12px;
-  flex: 0 0 auto;
+.ec-brand img{
+  width:48px;
+  height:48px;
+
+  object-fit:contain;
+
+  border-radius:12px;
 }
 
-.ec-brand-title {
-  display: block;
-  color: #164b72;
-  font-size: 18px;
-  line-height: 1;
-  font-weight: 900;
-  white-space: nowrap;
+.ec-brand-title{
+  display:block;
+
+  color:#164b72;
+
+  font-size:18px;
+  line-height:1;
+  font-weight:900;
+
+  white-space:nowrap;
 }
 
-.ec-brand-title span {
-  color: #15987e;
+.ec-brand-title span{
+  color:#15987e;
 }
 
-.ec-brand-sub {
-  display: block;
-  margin-top: 4px;
-  color: #607572;
-  font-size: 7px;
-  font-weight: 800;
-  letter-spacing: .55px;
-  white-space: nowrap;
+.ec-brand-sub{
+  display:block;
+
+  margin-top:4px;
+
+  color:#607572;
+
+  font-size:7px;
+  font-weight:800;
+
+  letter-spacing:.55px;
+
+  white-space:nowrap;
 }
 
-.ec-user {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex: 0 0 auto;
+
+.ec-user{
+  display:flex;
+  align-items:center;
+
+  gap:6px;
+
+  flex:0 0 auto;
 }
 
-.ec-bell {
-  position: relative;
-  width: 35px;
-  height: 35px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: #edf5f4;
-  font-size: 17px;
+.ec-bell{
+  position:relative;
+
+  width:35px;
+  height:35px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  border:0;
+  border-radius:50%;
+
+  background:#edf5f4;
+
+  font-size:17px;
+
+  cursor:pointer;
+
+  touch-action:manipulation;
 }
 
-.ec-bell-dot {
-  position: absolute;
-  right: 4px;
-  top: 3px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #ef3340;
+.ec-bell-dot{
+  position:absolute;
+
+  right:4px;
+  top:3px;
+
+  width:8px;
+  height:8px;
+
+  border-radius:50%;
+
+  background:#ef3340;
 }
 
-.ec-avatar {
-  width: 37px;
-  height: 37px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: #e4f2ef;
-  color: #28685f;
-  font-size: 15px;
-  font-weight: 900;
+.ec-avatar{
+  width:37px;
+  height:37px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  border-radius:50%;
+
+  background:#e4f2ef;
+
+  color:#28685f;
+
+  font-size:15px;
+  font-weight:900;
 }
 
-/* Logout */
-.ec-mobile-logout {
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 auto;
-  border: 0;
-  border-radius: 10px;
-  background: #f8dfe2;
-  color: #d33d4c;
-  text-decoration: none;
-  font-size: 18px;
-  font-weight: 900;
-  line-height: 1;
+
+/* RED LOGOUT */
+
+.ec-mobile-logout{
+  width:36px;
+  height:36px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  flex:0 0 auto;
+
+  border-radius:10px;
+
+  background:#e53945 !important;
+  border:2px solid #c51f2b !important;
+
+  color:#fff !important;
+
+  text-decoration:none !important;
+
+  font-size:18px;
+  font-weight:900;
+
+  box-shadow:0 3px 8px rgba(197,31,43,.20);
+
+  touch-action:manipulation;
 }
 
-/* =========================================================
+
+/* =====================================================
    AVAILABILITY
-   ========================================================= */
+   ===================================================== */
 
-.ec-availability {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-top: 9px;
-  padding: 12px 14px;
-  border-radius: 15px;
-  background: linear-gradient(135deg,#0e756b,#209b82);
-  color: #fff;
-  box-shadow: 0 8px 20px rgba(15,119,103,.15);
+.ec-availability{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+
+  gap:12px;
+
+  margin-top:9px;
+
+  padding:12px 14px;
+
+  border-radius:15px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #0e756b,
+      #209b82
+    );
+
+  color:#fff;
+
+  box-shadow:
+    0 8px 20px rgba(15,119,103,.15);
 }
 
-.ec-availability-name {
-  min-width: 0;
+.ec-availability-name{
+  min-width:0;
 }
 
-.ec-availability-name strong {
-  display: block;
-  font-size: 18px;
-  line-height: 1.05;
+.ec-availability-name strong{
+  display:block;
+
+  font-size:18px;
+  line-height:1.05;
 }
 
-.ec-availability-name span {
-  display: block;
-  margin-top: 2px;
-  font-size: 12px;
-  opacity: .94;
+.ec-availability-name span{
+  display:block;
+
+  margin-top:2px;
+
+  font-size:12px;
+
+  opacity:.94;
 }
 
-.ec-availability-form {
-  margin: 0;
+.ec-availability-form{
+  margin:0;
 }
 
-.ec-switch {
-  position: relative;
-  width: 57px;
-  height: 31px;
-  padding: 0;
-  border: 0;
-  border-radius: 999px;
-  background: #d9e9e6;
-  cursor: pointer;
-  box-shadow: inset 0 1px 3px rgba(0,0,0,.15);
+.ec-switch{
+  position:relative;
+
+  width:57px;
+  height:31px;
+
+  padding:0;
+
+  border:0;
+  border-radius:999px;
+
+  background:#d9e9e6;
+
+  cursor:pointer;
+
+  box-shadow:
+    inset 0 1px 3px rgba(0,0,0,.15);
 }
 
-.ec-switch.on {
-  background: #51d39b;
+.ec-switch.on{
+  background:#51d39b;
 }
 
-.ec-switch-knob {
-  position: absolute;
-  top: 4px;
-  left: 4px;
-  width: 23px;
-  height: 23px;
-  border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 2px 5px rgba(0,0,0,.2);
-  transition: left .15s ease;
+.ec-switch-knob{
+  position:absolute;
+
+  top:4px;
+  left:4px;
+
+  width:23px;
+  height:23px;
+
+  border-radius:50%;
+
+  background:#fff;
+
+  box-shadow:
+    0 2px 5px rgba(0,0,0,.2);
 }
 
-.ec-switch.on .ec-switch-knob {
-  left: 30px;
+.ec-switch.on .ec-switch-knob{
+  left:30px;
 }
 
-/* =========================================================
+
+/* =====================================================
    STATS
-   ========================================================= */
+   ===================================================== */
 
-.ec-stats {
-  display: grid;
-  grid-template-columns: repeat(3,1fr);
-  gap: 7px;
-  margin-top: 8px;
+.ec-stats{
+  display:grid;
+
+  grid-template-columns:
+    repeat(3,1fr);
+
+  gap:7px;
+
+  margin-top:8px;
 }
 
-.ec-stat {
-  min-height: 63px;
-  padding: 8px 5px;
-  border-radius: 12px;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+.ec-stat{
+  min-height:63px;
+
+  padding:8px 5px;
+
+  border-radius:12px;
+
+  text-align:center;
+
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
 }
 
-.ec-stat b {
-  display: block;
-  font-size: 22px;
-  line-height: 1;
+.ec-stat b{
+  display:block;
+
+  font-size:22px;
+  line-height:1;
 }
 
-.ec-stat span {
-  display: block;
-  margin-top: 4px;
-  font-size: 10px;
-  font-weight: 900;
+.ec-stat span{
+  display:block;
+
+  margin-top:4px;
+
+  font-size:10px;
+  font-weight:900;
 }
 
-.ec-stat small {
-  display: block;
-  margin-top: 2px;
-  font-size: 8px;
+.ec-stat small{
+  display:block;
+
+  margin-top:2px;
+
+  font-size:8px;
 }
 
-.ec-stat.new {
-  background: #fde2e6;
-  color: #cf3849;
+.ec-stat.new{
+  background:#fde2e6;
+  color:#cf3849;
 }
 
-.ec-stat.active {
-  background: #e3effc;
-  color: #2265a0;
+.ec-stat.active{
+  background:#e3effc;
+  color:#2265a0;
 }
 
-.ec-stat.today {
-  background: #e3f5ec;
-  color: #237653;
+.ec-stat.today{
+  background:#e3f5ec;
+  color:#237653;
 }
 
-/* =========================================================
-   PAGE TITLE
-   ========================================================= */
 
-.ec-page-title {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 10px;
-  gap: 8px;
+/* =====================================================
+   TITLE
+   ===================================================== */
+
+.ec-page-title{
+  display:flex;
+
+  align-items:center;
+  justify-content:space-between;
+
+  margin-top:10px;
+
+  gap:8px;
 }
 
-.ec-page-title h1 {
-  margin: 0;
-  font-size: 23px;
-  color: #193b39;
+.ec-page-title h1{
+  margin:0;
+
+  font-size:23px;
+
+  color:#193b39;
 }
 
-.ec-auto {
-  padding: 6px 9px;
-  border-radius: 999px;
-  background: #e7f3f0;
-  color: #28685f;
-  font-size: 9px;
-  font-weight: 900;
-  white-space: nowrap;
+.ec-auto{
+  padding:6px 9px;
+
+  border-radius:999px;
+
+  background:#e7f3f0;
+
+  color:#28685f;
+
+  font-size:9px;
+  font-weight:900;
+
+  white-space:nowrap;
 }
 
-/* =========================================================
+
+/* =====================================================
    TABS
-   ========================================================= */
+   ===================================================== */
 
-.ec-tabs {
-  display: grid;
-  grid-template-columns: repeat(3,1fr);
-  gap: 3px;
-  margin: 7px 0 8px;
-  padding: 3px;
-  border-radius: 12px;
-  background: #edf4f3;
+.ec-tabs{
+  display:grid;
+
+  grid-template-columns:
+    repeat(3,1fr);
+
+  gap:3px;
+
+  margin:7px 0 8px;
+
+  padding:3px;
+
+  border-radius:12px;
+
+  background:#edf4f3;
 }
 
-.ec-tab {
-  min-height: 31px;
-  border: 0;
-  border-radius: 9px;
-  background: transparent;
-  color: #3e5754;
-  font-size: 10px;
-  font-weight: 900;
-  text-align: center;
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.ec-tab{
+  min-height:31px;
+
+  border:0;
+  border-radius:9px;
+
+  background:transparent;
+
+  color:#3e5754;
+
+  font-size:10px;
+  font-weight:900;
+
+  text-decoration:none;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  cursor:pointer;
 }
 
-.ec-tab.active {
-  background: #159b88;
-  color: #fff;
+.ec-tab.active{
+  background:#159b88;
+  color:#fff;
 }
 
-/* =========================================================
+
+/* =====================================================
    ACTIVE ORDER
-   ========================================================= */
+   ===================================================== */
 
-.ec-active {
-  background: linear-gradient(135deg,#0b6470,#1fa58f);
-  color: #fff;
-  border-radius: 16px;
-  padding: 11px;
-  margin-bottom: 8px;
-  box-shadow: 0 10px 24px rgba(31,165,143,.17);
+.ec-active{
+  background:
+    linear-gradient(
+      135deg,
+      #0b6470,
+      #1fa58f
+    );
+
+  color:#fff;
+
+  border-radius:16px;
+
+  padding:11px;
+
+  margin-bottom:8px;
+
+  box-shadow:
+    0 10px 24px rgba(31,165,143,.17);
 }
 
-.ec-active .ec-order-no {
-  font-size: 9px;
-  font-weight: 900;
-  color: #d8f1eb;
+.ec-active .ec-order-no{
+  font-size:9px;
+  font-weight:900;
+  color:#d8f1eb;
 }
 
-.ec-active h2 {
-  margin: 3px 0 7px;
-  font-size: 16px;
-  color: #fff;
+.ec-active h2{
+  margin:3px 0 7px;
+
+  font-size:16px;
+
+  color:#fff;
 }
 
-.ec-route-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 5px;
+.ec-route-grid{
+  display:grid;
+
+  grid-template-columns:
+    1fr 1fr;
+
+  gap:5px;
 }
 
-.ec-route-box {
-  min-width: 0;
-  padding: 7px;
-  border-radius: 9px;
-  background: #fff;
-  color: #193b39;
+.ec-route-box{
+  min-width:0;
+
+  padding:7px;
+
+  border-radius:9px;
+
+  background:#fff;
+
+  color:#193b39;
 }
 
-.ec-route-box small {
-  display: block;
-  margin-bottom: 2px;
-  color: #58706c;
-  font-size: 7px;
-  font-weight: 900;
+.ec-route-box small{
+  display:block;
+
+  margin-bottom:2px;
+
+  color:#58706c;
+
+  font-size:7px;
+  font-weight:900;
 }
 
-.ec-route-box b {
-  display: block;
-  font-size: 9px;
-  line-height: 1.2;
-  overflow-wrap: anywhere;
+.ec-route-box b{
+  display:block;
+
+  font-size:9px;
+  line-height:1.2;
+
+  overflow-wrap:anywhere;
 }
 
-/* =========================================================
+
+/* =====================================================
    BUTTONS
-   ========================================================= */
+   ===================================================== */
 
-.ec-main-btn {
-  display: block;
-  width: 100%;
-  min-height: 31px;
-  margin-top: 5px;
-  padding: 7px 8px;
-  border: 0;
-  border-radius: 9px;
-  background: #159b88;
-  color: #fff !important;
-  text-align: center;
-  text-decoration: none;
-  font-size: 9px;
-  font-weight: 900;
-  cursor: pointer;
+.ec-main-btn{
+  display:block;
+
+  width:100%;
+
+  min-height:34px;
+
+  margin-top:6px;
+
+  padding:8px;
+
+  border:0;
+
+  border-radius:9px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #1aa18d,
+      #35b878
+    );
+
+  color:#fff !important;
+
+  text-align:center;
+  text-decoration:none;
+
+  font-size:10px;
+  font-weight:900;
+
+  cursor:pointer;
+
+  touch-action:manipulation;
 }
 
-.ec-light-btn {
-  background: #e7f3f0 !important;
-  color: #28685f !important;
+.ec-main-btn:active{
+  transform:scale(.99);
 }
 
-.ec-problem {
-  width: 100%;
-  min-height: 29px;
-  margin-top: 5px;
-  padding: 6px 8px;
-  border: 1px solid #d8e5e2;
-  border-radius: 8px;
-  background: #fff;
-  color: #193b39;
-  font-size: 9px;
+.ec-light-btn{
+  background:#e7f3f0 !important;
+  color:#28685f !important;
 }
 
-/* =========================================================
+.ec-problem{
+  width:100%;
+
+  min-height:32px;
+
+  margin-top:6px;
+
+  padding:7px 8px;
+
+  border:1px solid #d8e5e2;
+
+  border-radius:8px;
+
+  background:#fff;
+
+  color:#193b39;
+
+  font-size:9px;
+}
+
+
+/* =====================================================
    ORDERS
-   ========================================================= */
+   ===================================================== */
 
-.ec-orders-card {
-  min-height: 0;
-  border: 0;
-  background: transparent;
+.ec-orders-card{
+  min-height:0;
+
+  border:0;
+
+  background:transparent;
 }
 
-.ec-offers {
-  min-height: 0;
+.ec-offers{
+  min-height:0;
 }
 
-.ec-offer {
-  margin-bottom: 7px;
-  padding: 11px;
-  border: 1px solid #dce9e6;
-  border-radius: 15px;
-  background: #fff;
-  box-shadow: 0 5px 15px rgba(7,58,90,.06);
+.ec-offer{
+  margin-bottom:7px;
+
+  padding:11px;
+
+  border:1px solid #dce9e6;
+
+  border-radius:15px;
+
+  background:#fff;
+
+  box-shadow:
+    0 5px 15px rgba(7,58,90,.06);
 }
 
-.ec-offer-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 8px;
+.ec-offer-top{
+  display:flex;
+
+  justify-content:space-between;
+  align-items:flex-start;
+
+  gap:8px;
 }
 
-.ec-offer-no {
-  color: #506763;
-  font-size: 9px;
-  font-weight: 900;
+.ec-offer-no{
+  color:#506763;
+
+  font-size:9px;
+  font-weight:900;
 }
 
-.ec-new-badge {
-  padding: 4px 8px;
-  border-radius: 999px;
-  background: #fde2e6;
-  color: #cf3849;
-  font-size: 8px;
-  font-weight: 900;
+.ec-new-badge{
+  padding:4px 8px;
+
+  border-radius:999px;
+
+  background:#fde2e6;
+
+  color:#cf3849;
+
+  font-size:8px;
+  font-weight:900;
 }
 
-.ec-offer h3 {
-  margin: 4px 0 1px;
-  color: #193b39;
-  font-size: 15px;
+.ec-offer h3{
+  margin:4px 0 1px;
+
+  color:#193b39;
+
+  font-size:15px;
 }
 
-.ec-offer-location {
-  color: #71817f;
-  font-size: 10px;
-  margin-bottom: 8px;
+.ec-offer-location{
+  color:#71817f;
+
+  font-size:10px;
+
+  margin-bottom:8px;
 }
 
-.ec-offer-meta {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 5px 8px;
-  color: #46605d;
-  font-size: 10px;
+.ec-offer-meta{
+  display:grid;
+
+  grid-template-columns:
+    1fr 1fr;
+
+  gap:5px 8px;
+
+  color:#46605d;
+
+  font-size:10px;
 }
 
-.ec-offer-meta span {
-  min-width: 0;
-  overflow-wrap: anywhere;
+.ec-offer-meta span{
+  min-width:0;
+
+  overflow-wrap:anywhere;
 }
 
-.ec-offer-meta b {
-  color: #28685f;
+.ec-offer-meta b{
+  color:#28685f;
 }
 
-.ec-offer .ec-main-btn {
-  min-height: 34px;
-  margin-top: 9px;
-  font-size: 10px;
-  background: linear-gradient(135deg,#1aa18d,#35b878);
+
+/* =====================================================
+   EMPTY
+   ===================================================== */
+
+.ec-empty{
+  min-height:92px;
+
+  height:92px;
+
+  padding:15px 10px;
+
+  border:1px solid #dce9e6;
+
+  border-radius:15px;
+
+  background:#fff;
+
+  display:flex;
+
+  align-items:center;
+  justify-content:center;
+
+  text-align:center;
+
+  color:#71817f;
+
+  font-size:11px;
 }
 
-/* Empty state - intentionally compact */
-.ec-empty {
-  min-height: 92px;
-  height: 92px;
-  margin: 0;
-  padding: 15px 10px;
-  border: 1px solid #dce9e6;
-  border-radius: 15px;
-  background: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  color: #71817f;
-  font-size: 11px;
-}
 
-/* =========================================================
+/* =====================================================
    QUICK ACCESS
-   ========================================================= */
+   ===================================================== */
 
-.ec-quick {
-  margin-top: 8px;
-  padding: 10px;
-  border-radius: 15px;
-  background: #fff;
-  border: 1px solid #dce9e6;
+.ec-quick{
+  margin-top:8px;
+
+  padding:10px;
+
+  border-radius:15px;
+
+  background:#fff;
+
+  border:1px solid #dce9e6;
 }
 
-.ec-quick-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 8px;
+.ec-quick-head{
+  display:flex;
+
+  align-items:center;
+  justify-content:space-between;
+
+  margin-bottom:8px;
 }
 
-.ec-quick-head strong {
-  font-size: 12px;
-  color: #193b39;
+.ec-quick-head strong{
+  font-size:12px;
+
+  color:#193b39;
 }
 
-.ec-quick-head a {
-  color: #159b88;
-  font-size: 9px;
-  font-weight: 900;
-  text-decoration: none;
+.ec-quick-head a{
+  color:#159b88;
+
+  font-size:9px;
+  font-weight:900;
+
+  text-decoration:none;
 }
 
-.ec-quick-grid {
-  display: grid;
-  grid-template-columns: repeat(4,1fr);
-  gap: 5px;
+.ec-quick-grid{
+  display:grid;
+
+  grid-template-columns:
+    repeat(4,1fr);
+
+  gap:5px;
 }
 
-.ec-quick-item {
-  min-height: 54px;
-  padding: 6px 3px;
-  border-radius: 10px;
-  background: #f1f7f6;
-  color: #28685f;
-  text-decoration: none;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  text-align: center;
+.ec-quick-item{
+  min-height:54px;
+
+  padding:6px 3px;
+
+  border-radius:10px;
+
+  background:#f1f7f6;
+
+  color:#28685f;
+
+  text-decoration:none;
+
+  display:flex;
+
+  flex-direction:column;
+
+  align-items:center;
+  justify-content:center;
+
+  gap:3px;
+
+  text-align:center;
+
+  cursor:pointer;
+
+  touch-action:manipulation;
 }
 
-.ec-quick-item .icon {
-  font-size: 18px;
-  line-height: 1;
+.ec-quick-item .icon{
+  font-size:18px;
 }
 
-.ec-quick-item span:last-child {
-  font-size: 8px;
-  font-weight: 900;
+.ec-quick-item span:last-child{
+  font-size:8px;
+  font-weight:900;
 }
 
-/* =========================================================
+
+/* =====================================================
+   REAL PERMISSION BUTTONS
+   ===================================================== */
+
+.ec-permission{
+  margin-top:7px;
+
+  display:grid;
+
+  grid-template-columns:
+    1fr 1fr;
+
+  gap:5px;
+}
+
+.ec-permission-btn{
+  min-height:34px;
+
+  padding:7px 5px;
+
+  border:1px solid #d8e8e5;
+
+  border-radius:9px;
+
+  background:#edf7f5;
+
+  color:#28685f;
+
+  font-size:8px;
+
+  font-weight:900;
+
+  cursor:pointer;
+
+  touch-action:manipulation;
+}
+
+.ec-permission-btn:active{
+  transform:scale(.98);
+}
+
+
+/* =====================================================
    STATUS
-   ========================================================= */
+   ===================================================== */
 
-.ec-status {
-  display: grid;
-  grid-template-columns: repeat(3,1fr);
-  gap: 5px;
-  margin-top: 7px;
+.ec-status{
+  display:grid;
+
+  grid-template-columns:
+    repeat(3,1fr);
+
+  gap:5px;
+
+  margin-top:7px;
 }
 
-.ec-status-item {
-  padding: 6px 3px;
-  border-radius: 9px;
-  background: #edf5f4;
-  text-align: center;
+.ec-status-item{
+  padding:6px 3px;
+
+  border-radius:9px;
+
+  background:#edf5f4;
+
+  text-align:center;
 }
 
-.ec-status-item b {
-  display: block;
-  color: #159b88;
-  font-size: 8px;
-  font-weight: 900;
+.ec-status-item b{
+  display:block;
+
+  color:#159b88;
+
+  font-size:8px;
+  font-weight:900;
 }
 
-.ec-status-item span {
-  display: block;
-  margin-top: 2px;
-  color: #667a77;
-  font-size: 7px;
+.ec-status-item span{
+  display:block;
+
+  margin-top:2px;
+
+  color:#667a77;
+
+  font-size:7px;
 }
 
-/* =========================================================
-   BOTTOM NAVIGATION
-   ========================================================= */
 
-.ec-bottom-nav {
-  display: grid;
-  grid-template-columns: repeat(4,1fr);
-  gap: 4px;
-  margin-top: 6px;
-  padding: 6px 5px 3px;
-  border-top: 1px solid #dce8e6;
-  background: #fff;
+/* =====================================================
+   BOTTOM NAV
+   ===================================================== */
+
+.ec-bottom-nav{
+  display:grid;
+
+  grid-template-columns:
+    repeat(4,1fr);
+
+  gap:4px;
+
+  margin-top:6px;
+
+  padding:
+    6px
+    5px
+    3px;
+
+  border-top:1px solid #dce8e6;
+
+  background:#fff;
 }
 
-.ec-nav {
-  min-height: 39px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1px;
-  color: #3c5753;
-  text-decoration: none;
-  font-size: 8px;
-  font-weight: 900;
-  border-radius: 9px;
+.ec-nav{
+  min-height:39px;
+
+  display:flex;
+
+  flex-direction:column;
+
+  align-items:center;
+  justify-content:center;
+
+  gap:1px;
+
+  color:#3c5753;
+
+  text-decoration:none;
+
+  font-size:8px;
+  font-weight:900;
+
+  border-radius:9px;
+
+  cursor:pointer;
+
+  touch-action:manipulation;
 }
 
-.ec-nav .icon {
-  font-size: 17px;
-  line-height: 1;
+.ec-nav .icon{
+  font-size:17px;
 }
 
-.ec-nav.active {
-  color: #087d70;
-  background: #edf8f5;
+.ec-nav.active{
+  color:#087d70;
+
+  background:#edf8f5;
 }
 
-/* =========================================================
+
+/* =====================================================
    DESKTOP
-   ========================================================= */
+   ===================================================== */
 
-@media (min-width:901px) {
+@media(min-width:901px){
 
-  .driverpage {
-    max-width: 1100px;
+  .driverpage{
+    max-width:1100px;
   }
 
-  .ec-app-head {
-    display: none;
+  .ec-app-head{
+    display:none;
   }
+
 }
 
-/* =========================================================
-   MOBILE
-   ========================================================= */
 
-@media (max-width:900px) {
+/* =====================================================
+   MOBILE
+   ===================================================== */
+
+@media(max-width:900px){
 
   html,
-  body {
-    width: 100%;
-    min-height: 100%;
-    overflow: hidden;
-    -webkit-text-size-adjust: 100%;
+  body{
+    width:100%;
+
+    min-height:100%;
+
+    overflow:hidden;
+
+    -webkit-text-size-adjust:100%;
   }
 
-  /*
-     Hide the old base.html mobile elements.
-     The driver page uses its own compact header.
-  */
+
+  /* Hide old base header only on DRIVER page */
 
   body:has(.driverpage) > .top,
   body:has(.driverpage) .app-sidebar,
-  body:has(.driverpage) .app-topbar {
-    display: none !important;
+  body:has(.driverpage) .app-topbar{
+    display:none !important;
   }
 
-  body:has(.driverpage) .app-shell {
-    display: block !important;
-    width: 100% !important;
-    height: 100dvh !important;
-    min-height: 100dvh !important;
-    margin: 0 !important;
-    padding: 0 !important;
+
+  body:has(.driverpage) .app-shell{
+    display:block !important;
+
+    width:100% !important;
+
+    height:100dvh !important;
+
+    min-height:100dvh !important;
+
+    margin:0 !important;
+
+    padding:0 !important;
   }
 
-  body:has(.driverpage) .app-main {
-    width: 100% !important;
-    min-width: 0 !important;
-    height: 100dvh !important;
-    min-height: 0 !important;
-    margin: 0 !important;
+
+  body:has(.driverpage) .app-main{
+    width:100% !important;
+
+    min-width:0 !important;
+
+    height:100dvh !important;
+
+    min-height:0 !important;
+
+    margin:0 !important;
   }
 
-  body:has(.driverpage) .app-content {
-    width: 100%;
-    height: 100dvh;
-    min-height: 0;
-    overflow: hidden;
+
+  body:has(.driverpage) .app-content{
+    width:100%;
+
+    height:100dvh;
+
+    min-height:0;
+
+    overflow:hidden;
 
     padding:
       calc(env(safe-area-inset-top) + 5px)
@@ -711,983 +1037,886 @@
       max(9px,env(safe-area-inset-left));
   }
 
-  .driverpage {
-    width: 100%;
-    height: 100%;
-    max-height: 100%;
-    min-height: 0;
 
-    display: flex;
-    flex-direction: column;
+  .driverpage{
+    width:100%;
 
-    overflow: hidden;
+    height:100%;
+
+    max-height:100%;
+
+    min-height:0;
+
+    display:flex;
+
+    flex-direction:column;
+
+    overflow:hidden;
   }
+
 
   /* HEADER */
 
-  .ec-app-head {
-    min-height: 56px;
-    padding: 2px 1px 5px;
+  .ec-app-head{
+    min-height:56px;
+
+    padding:2px 1px 5px;
   }
 
-  .ec-brand {
-    min-width: 0;
-    flex: 1 1 auto;
+  .ec-brand{
+    min-width:0;
+
+    flex:1 1 auto;
   }
 
-  .ec-brand img {
-    width: 42px;
-    height: 42px;
+  .ec-brand img{
+    width:42px;
+    height:42px;
   }
 
-  .ec-brand-title {
-    font-size: 15px;
-    letter-spacing: -.15px;
+  .ec-brand-title{
+    font-size:15px;
   }
 
-  .ec-brand-sub {
-    font-size: 6px;
-    letter-spacing: .35px;
+  .ec-brand-sub{
+    font-size:6px;
   }
 
-  .ec-user {
-    gap: 5px;
+  .ec-user{
+    gap:5px;
   }
 
-  .ec-bell {
-    width: 32px;
-    height: 32px;
-    font-size: 15px;
+  .ec-bell{
+    width:32px;
+    height:32px;
+
+    font-size:15px;
   }
 
-  .ec-avatar {
-    width: 33px;
-    height: 33px;
-    font-size: 13px;
+  .ec-avatar{
+    width:33px;
+    height:33px;
+
+    font-size:13px;
   }
 
-  .ec-mobile-logout {
-    width: 34px;
-    height: 34px;
-    border-radius: 9px;
-    font-size: 17px;
+  .ec-mobile-logout{
+    width:34px;
+    height:34px;
+
+    border-radius:9px;
   }
+
 
   /* AVAILABILITY */
 
-  .ec-availability {
-    margin-top: 6px;
-    padding: 10px 12px;
-    min-height: 70px;
+  .ec-availability{
+    margin-top:6px;
+
+    padding:10px 12px;
+
+    min-height:70px;
   }
 
-  .ec-availability-name strong {
-    font-size: 17px;
+  .ec-availability-name strong{
+    font-size:17px;
   }
 
-  .ec-availability-name span {
-    font-size: 11px;
+  .ec-availability-name span{
+    font-size:11px;
   }
+
 
   /* STATS */
 
-  .ec-stats {
-    gap: 6px;
-    margin-top: 6px;
+  .ec-stats{
+    gap:6px;
+
+    margin-top:6px;
   }
 
-  .ec-stat {
-    min-height: 56px;
-    padding: 6px 4px;
+  .ec-stat{
+    min-height:56px;
+
+    padding:6px 4px;
   }
 
-  .ec-stat b {
-    font-size: 20px;
+  .ec-stat b{
+    font-size:20px;
   }
 
-  .ec-stat span {
-    font-size: 9px;
-    margin-top: 3px;
+  .ec-stat span{
+    font-size:9px;
   }
 
-  .ec-stat small {
-    font-size: 8px;
-  }
 
   /* TITLE */
 
-  .ec-page-title {
-    margin-top: 7px;
+  .ec-page-title{
+    margin-top:7px;
   }
 
-  .ec-page-title h1 {
-    font-size: 21px;
+  .ec-page-title h1{
+    font-size:21px;
   }
 
-  .ec-auto {
-    font-size: 8px;
-    padding: 5px 8px;
+  .ec-auto{
+    font-size:8px;
+
+    padding:5px 8px;
   }
+
 
   /* TABS */
 
-  .ec-tabs {
-    margin: 5px 0 6px;
+  .ec-tabs{
+    margin:5px 0 6px;
   }
 
-  /* ACTIVE ORDER */
 
-  .ec-active {
-    flex: 0 0 auto;
-    max-height: 185px;
-    overflow: auto;
-    margin-bottom: 6px;
-    -webkit-overflow-scrolling: touch;
+  /* ACTIVE */
+
+  .ec-active{
+    flex:0 0 auto;
+
+    max-height:185px;
+
+    overflow:auto;
+
+    margin-bottom:6px;
+
+    -webkit-overflow-scrolling:touch;
   }
 
-  /*
-     IMPORTANT:
-     Orders no longer fill the entire empty screen.
-  */
 
-  .ec-orders-card {
-    flex: 0 0 auto;
-    min-height: 0;
-    height: auto;
-    max-height: 280px;
-    overflow: hidden;
+  /* ORDERS */
+
+  .ec-orders-card{
+    flex:0 0 auto;
+
+    min-height:0;
+
+    height:auto;
+
+    max-height:280px;
+
+    overflow:hidden;
   }
 
-  /*
-     If there is one order:
-     only the required height is used.
+  .ec-offers{
+    height:auto;
 
-     If there are several orders:
-     only this list scrolls.
-  */
+    max-height:280px;
 
-  .ec-offers {
-    height: auto;
-    max-height: 280px;
-    min-height: 0;
+    min-height:0;
 
-    overflow-y: auto;
-    overflow-x: hidden;
+    overflow-y:auto;
 
-    -webkit-overflow-scrolling: touch;
+    overflow-x:hidden;
 
-    padding-right: 1px;
+    -webkit-overflow-scrolling:touch;
   }
 
-  .ec-offer {
-    min-height: 0;
-    display: block;
-    margin-bottom: 6px;
+  .ec-offer{
+    min-height:0;
+
+    display:block;
+
+    margin-bottom:6px;
   }
 
-  .ec-offer .ec-main-btn {
-    margin-top: 8px;
+
+  .ec-orders-card:has(.ec-empty){
+    flex:0 0 auto !important;
+
+    height:auto !important;
+
+    max-height:none !important;
   }
 
-  /*
-     Empty state stays compact.
-  */
+  .ec-orders-card:has(.ec-empty) .ec-offers{
+    height:auto !important;
 
-  .ec-orders-card:has(.ec-empty) {
-    flex: 0 0 auto !important;
-    height: auto !important;
-    max-height: none !important;
+    max-height:none !important;
+
+    overflow:visible !important;
   }
 
-  .ec-orders-card:has(.ec-empty) .ec-offers {
-    height: auto !important;
-    max-height: none !important;
-    overflow: visible !important;
-  }
 
   /* QUICK ACCESS */
 
-  .ec-quick {
-    flex: 0 0 auto;
-    margin-top: 6px;
-    padding: 8px;
+  .ec-quick{
+    flex:0 0 auto;
+
+    margin-top:6px;
+
+    padding:8px;
   }
 
-  .ec-quick-head {
-    margin-bottom: 6px;
+  .ec-quick-head{
+    margin-bottom:6px;
   }
 
-  .ec-quick-head strong {
-    font-size: 11px;
+  .ec-quick-item{
+    min-height:47px;
   }
 
-  .ec-quick-head a {
-    font-size: 8px;
+  .ec-quick-item .icon{
+    font-size:16px;
   }
 
-  .ec-quick-item {
-    min-height: 47px;
+
+  /* PERMISSIONS */
+
+  .ec-permission{
+    flex:0 0 auto;
+
+    margin-top:5px;
   }
 
-  .ec-quick-item .icon {
-    font-size: 16px;
-  }
-
-  .ec-quick-item span:last-child {
-    font-size: 7px;
-  }
 
   /* STATUS */
 
-  .ec-status {
-    flex: 0 0 auto;
-    margin-top: 5px;
+  .ec-status{
+    flex:0 0 auto;
+
+    margin-top:5px;
   }
 
-  .ec-status-item {
-    padding: 5px 2px;
-  }
 
-  /* BOTTOM NAV */
+  /* NAV */
 
-  .ec-bottom-nav {
-    flex: 0 0 auto;
-    margin-top: auto;
+  .ec-bottom-nav{
+    flex:0 0 auto;
+
+    margin-top:auto;
 
     padding:
       5px 4px
       max(3px,env(safe-area-inset-bottom));
   }
 
-  .ec-nav {
-    min-height: 38px;
-  }
-
-  .ec-nav .icon {
-    font-size: 16px;
-  }
 }
 
-/* =========================================================
+
+/* =====================================================
    SMALL PHONES
-   ========================================================= */
+   ===================================================== */
 
-@media (max-width:430px) {
+@media(max-width:430px){
 
-  .ec-brand-title {
-    font-size: 15px;
+  .ec-brand-title{
+    font-size:15px;
   }
 
-  .ec-brand img {
-    width: 42px;
-    height: 42px;
+  .ec-brand-sub{
+    display:none;
   }
 
-  .ec-availability-name strong {
-    font-size: 16px;
+  .ec-brand img{
+    width:40px;
+    height:40px;
   }
 
-  .ec-page-title h1 {
-    font-size: 20px;
-  }
 }
 
-@media (max-width:360px) {
 
-  .ec-brand-sub {
-    display: none;
+/* =====================================================
+   SHORT PHONES
+   ===================================================== */
+
+@media(max-height:760px) and (max-width:900px){
+
+  .ec-app-head{
+    min-height:52px;
   }
 
-  .ec-mobile-logout {
-    width: 32px;
-    height: 32px;
+  .ec-brand img{
+    width:38px;
+    height:38px;
   }
 
-  .ec-bell {
-    width: 30px;
-    height: 30px;
+  .ec-availability{
+    padding:8px 10px;
+
+    min-height:62px;
   }
 
-  .ec-avatar {
-    width: 31px;
-    height: 31px;
+  .ec-stat{
+    min-height:51px;
   }
 
-  .ec-quick-grid {
-    gap: 3px;
+  .ec-active{
+    max-height:150px;
   }
 
-  .ec-quick-item span:last-child {
-    font-size: 6.5px;
+  .ec-orders-card{
+    max-height:220px;
   }
+
+  .ec-offers{
+    max-height:220px;
+  }
+
+  .ec-empty{
+    min-height:78px;
+    height:78px;
+  }
+
+  .ec-quick-item{
+    min-height:41px;
+  }
+
 }
 
-/* =========================================================
-   SHORT HEIGHT DEVICES
-   ========================================================= */
-
-@media (max-height:760px) and (max-width:900px) {
-
-  .ec-app-head {
-    min-height: 52px;
-  }
-
-  .ec-brand img {
-    width: 38px;
-    height: 38px;
-  }
-
-  .ec-availability {
-    padding: 8px 10px;
-    min-height: 62px;
-  }
-
-  .ec-stats {
-    margin-top: 5px;
-  }
-
-  .ec-stat {
-    min-height: 51px;
-  }
-
-  .ec-page-title {
-    margin-top: 6px;
-  }
-
-  .ec-tabs {
-    margin: 4px 0 5px;
-  }
-
-  .ec-active {
-    max-height: 155px;
-  }
-
-  .ec-orders-card {
-    max-height: 235px;
-  }
-
-  .ec-offers {
-    max-height: 235px;
-  }
-
-  .ec-empty {
-    min-height: 78px;
-    height: 78px;
-    padding: 10px;
-  }
-
-  .ec-quick {
-    margin-top: 4px;
-    padding: 6px;
-  }
-
-  .ec-quick-item {
-    min-height: 42px;
-  }
-
-  .ec-status {
-    margin-top: 3px;
-  }
-}
 </style>
 
 
 <main class="driverpage">
 
-  <!-- =====================================================
-       HEADER
-       ===================================================== -->
 
-  <header class="ec-app-head">
+<!-- =====================================================
+     DRIVER HEADER
+     ===================================================== -->
 
-    <div class="ec-brand">
+<header class="ec-app-head">
 
-      <img
-        src="{{url_for('static',filename='img/logo.jpeg')}}"
-        alt="ENTLASS-CONNECT"
-      >
+  <div class="ec-brand">
 
-      <div>
+    <img
+      src="{{url_for('static',filename='img/logo.jpeg')}}"
+      alt="ENTLASS-CONNECT"
+    >
 
-        <span class="ec-brand-title">
-          ENTLASS-<span>CONNECT</span>
-        </span>
+    <div>
 
-        <span class="ec-brand-sub">
-          SICHER · MENSCHEN · DIGITAL · NACHHALTIG
-        </span>
+      <span class="ec-brand-title">
+        ENTLASS-<span>CONNECT</span>
+      </span>
 
-      </div>
-
-    </div>
-
-    <div class="ec-user">
-
-      <div class="ec-bell">
-        🔔
-        <span class="ec-bell-dot"></span>
-      </div>
-
-      <div class="ec-avatar">
-        {{driver.name[:1]|upper}}
-      </div>
-
-      <!-- EXISTING LOGOUT ROUTE -->
-      <a
-        class="ec-mobile-logout"
-        href="{{url_for('logout')}}"
-        aria-label="Abmelden"
-        title="Abmelden"
-      >↪</a>
-
-    </div>
-
-  </header>
-
-
-  <!-- =====================================================
-       AVAILABILITY
-       ===================================================== -->
-
-  <section class="ec-availability">
-
-    <div class="ec-availability-name">
-
-      <strong>
-        {{driver.name}}
-      </strong>
-
-      <span>
-        {{'Verfügbar' if driver.shift_active and driver.available else 'Nicht verfügbar'}}
+      <span class="ec-brand-sub">
+        SICHER · MENSCHEN · DIGITAL · NACHHALTIG
       </span>
 
     </div>
 
-    <form
-      class="ec-availability-form"
-      method="post"
-      action="{{url_for('driver_availability')}}"
-    >
-
-      <input
-        type="hidden"
-        name="available"
-        value="{{0 if driver.shift_active else 1}}"
-      >
-
-      <button
-        class="ec-switch {{'on' if driver.shift_active and driver.available else ''}}"
-        type="submit"
-        aria-label="Verfügbarkeit ändern"
-      >
-
-        <span class="ec-switch-knob"></span>
-
-      </button>
-
-    </form>
-
-  </section>
-
-
-  <!-- =====================================================
-       STATISTICS
-       ===================================================== -->
-
-  <div class="ec-stats">
-
-    <div class="ec-stat new">
-      <b>{{offers|length}}</b>
-      <span>Neue</span>
-      <small>Aufträge</small>
-    </div>
-
-    <div class="ec-stat active">
-      <b>{{1 if active else 0}}</b>
-      <span>Aktiv</span>
-      <small>Auftrag</small>
-    </div>
-
-    <div class="ec-stat today">
-      <b>{{(offers|length) + (1 if active else 0)}}</b>
-      <span>Heute</span>
-      <small>Aufträge</small>
-    </div>
-
   </div>
 
 
-  <!-- =====================================================
-       ORDERS TITLE
-       ===================================================== -->
+  <div class="ec-user">
 
-  <div class="ec-page-title">
 
-    <h1>
-      Aufträge
-    </h1>
+    <!-- REAL NOTIFICATION BUTTON -->
 
-    <span class="ec-auto">
-      Automatisch zugewiesen
+    <button
+      type="button"
+      class="ec-bell"
+      onclick="enableNotifications()"
+      aria-label="Benachrichtigungen aktivieren"
+      title="Benachrichtigungen aktivieren"
+    >
+
+      🔔
+
+      <span class="ec-bell-dot"></span>
+
+    </button>
+
+
+    <div class="ec-avatar">
+      {{driver.name[:1]|upper}}
+    </div>
+
+
+    <!-- REAL LOGOUT -->
+
+    <a
+      class="ec-mobile-logout"
+      href="{{url_for('logout')}}"
+      aria-label="Abmelden"
+      title="Abmelden"
+    >
+      ↪
+    </a>
+
+  </div>
+
+</header>
+
+
+<!-- =====================================================
+     AVAILABILITY
+     ===================================================== -->
+
+<section class="ec-availability">
+
+  <div class="ec-availability-name">
+
+    <strong>
+      {{driver.name}}
+    </strong>
+
+    <span>
+      {{'Verfügbar' if driver.shift_active and driver.available else 'Nicht verfügbar'}}
     </span>
 
   </div>
 
 
-  <!-- =====================================================
-       TABS
-       ===================================================== -->
-
-  <div class="ec-tabs">
-
-    <a
-      class="ec-tab active"
-      href="#neue"
-    >
-      Neue ({{offers|length}})
-    </a>
-
-    <a
-      class="ec-tab"
-      href="#aktiv"
-    >
-      Aktive ({{1 if active else 0}})
-    </a>
-
-    <a
-      class="ec-tab"
-      href="{{url_for('reports')}}"
-    >
-      Heute
-    </a>
-
-  </div>
-
-
-  <!-- =====================================================
-       ACTIVE ORDER
-       ===================================================== -->
-
-  {% if active %}
-
-  <section
-    class="ec-active"
-    id="aktiv"
+  <form
+    class="ec-availability-form"
+    method="post"
+    action="{{url_for('driver_availability')}}"
   >
 
-    <span class="ec-order-no">
-      AUFTRAG {{active.order_no}}
+    <input
+      type="hidden"
+      name="available"
+      value="{{0 if driver.shift_active else 1}}"
+    >
+
+    <button
+      class="ec-switch {{'on' if driver.shift_active and driver.available else ''}}"
+      type="submit"
+      aria-label="Verfügbarkeit ändern"
+    >
+
+      <span class="ec-switch-knob"></span>
+
+    </button>
+
+  </form>
+
+</section>
+
+
+<!-- =====================================================
+     STATS
+     ===================================================== -->
+
+<div class="ec-stats">
+
+  <div class="ec-stat new">
+
+    <b>
+      {{offers|length}}
+    </b>
+
+    <span>
+      Neue
     </span>
 
-    <h2>
-      {{active.status|replace('_',' ')|title}}
-    </h2>
+    <small>
+      Aufträge
+    </small>
+
+  </div>
 
 
-    <div class="ec-route-grid">
+  <div class="ec-stat active">
 
-      <div class="ec-route-box">
+    <b>
+      {{1 if active else 0}}
+    </b>
 
-        <small>
-          ABHOLORT
-        </small>
+    <span>
+      Aktiv
+    </span>
 
-        <b>
-          {{active.pickup}}
-        </b>
+    <small>
+      Auftrag
+    </small>
 
-      </div>
-
-
-      <div class="ec-route-box">
-
-        <small>
-          ZIEL
-        </small>
-
-        <b>
-          {{active.destination}}
-        </b>
-
-      </div>
+  </div>
 
 
-      <div class="ec-route-box">
+  <div class="ec-stat today">
 
-        <small>
-          TRANSPORTART
-        </small>
+    <b>
+      {{(offers|length) + (1 if active else 0)}}
+    </b>
 
-        <b>
-          {{active.transport_type|capitalize}}
-        </b>
+    <span>
+      Heute
+    </span>
 
-      </div>
+    <small>
+      Aufträge
+    </small>
+
+  </div>
+
+</div>
 
 
-      <div class="ec-route-box">
+<!-- =====================================================
+     TITLE
+     ===================================================== -->
 
-        <small>
-          TERMIN
-        </small>
+<div class="ec-page-title">
 
-        <b>
-          {{active.date}} · {{active.pickup_time}}
-        </b>
+  <h1>
+    Aufträge
+  </h1>
 
-      </div>
+  <span class="ec-auto">
+    Automatisch zugewiesen
+  </span>
+
+</div>
+
+
+<!-- =====================================================
+     TABS
+     ===================================================== -->
+
+<div class="ec-tabs">
+
+  <a
+    class="ec-tab active"
+    href="#neue"
+  >
+    Neue ({{offers|length}})
+  </a>
+
+
+  <a
+    class="ec-tab"
+    href="#aktiv"
+  >
+    Aktive ({{1 if active else 0}})
+  </a>
+
+
+  <a
+    class="ec-tab"
+    href="{{url_for('reports')}}"
+  >
+    Heute
+  </a>
+
+</div>
+
+
+<!-- =====================================================
+     ACTIVE ORDER
+     ===================================================== -->
+
+{% if active %}
+
+<section
+  class="ec-active"
+  id="aktiv"
+>
+
+  <span class="ec-order-no">
+    AUFTRAG {{active.order_no}}
+  </span>
+
+  <h2>
+    {{active.status|replace('_',' ')|title}}
+  </h2>
+
+
+  <div class="ec-route-grid">
+
+    <div class="ec-route-box">
+
+      <small>
+        ABHOLORT
+      </small>
+
+      <b>
+        {{active.pickup}}
+      </b>
 
     </div>
 
 
-    {% if active.status in ['ACCEPTED','TO_PICKUP','OFFERED'] %}
+    <div class="ec-route-box">
 
-      <a
-        class="ec-main-btn"
-        href="https://www.google.com/maps/dir/?api=1&destination={{active.pickup|urlencode}}"
-        target="_blank"
-        rel="noopener"
-      >
-        Route zum Abholort
-      </a>
+      <small>
+        ZIEL
+      </small>
 
-    {% elif active.status in ['PICKED_UP','TO_DESTINATION','ARRIVED'] %}
+      <b>
+        {{active.destination}}
+      </b>
 
-      <a
-        class="ec-main-btn"
-        href="https://www.google.com/maps/dir/?api=1&destination={{active.destination|urlencode}}"
-        target="_blank"
-        rel="noopener"
-      >
-        Route zum Ziel
-      </a>
-
-    {% endif %}
+    </div>
 
 
-    {% if active.status!='OFFERED' %}
+    <div class="ec-route-box">
 
-    <form
-      method="post"
-      action="{{url_for('driver_status',order_id=active.id)}}"
-    >
+      <small>
+        TRANSPORTART
+      </small>
 
-      <button
-        class="ec-main-btn ec-light-btn"
-        type="submit"
-      >
+      <b>
+        {{active.transport_type|capitalize}}
+      </b>
 
-        Nächster Schritt:
-
-        {{
-          {
-            'ACCEPTED':'Unterwegs zum Abholort',
-            'TO_PICKUP':'Patient abgeholt',
-            'PICKED_UP':'Unterwegs zum Ziel',
-            'TO_DESTINATION':'Angekommen',
-            'ARRIVED':'Transport abschließen'
-          }.get(active.status,'Weiter')
-        }}
-
-      </button>
-
-    </form>
-
-    {% endif %}
+    </div>
 
 
-    <form
-      method="post"
-      action="{{url_for('driver_problem',order_id=active.id)}}"
-    >
+    <div class="ec-route-box">
 
-      <select
-        class="ec-problem"
-        name="problem"
-      >
+      <small>
+        TERMIN
+      </small>
 
-        <option>
-          Patient nicht angetroffen
-        </option>
+      <b>
+        {{active.date}} · {{active.pickup_time}}
+      </b>
 
-        <option>
-          Fahrzeugproblem
-        </option>
+    </div>
 
-        <option>
-          Adresse falsch
-        </option>
-
-        <option>
-          Verspätung
-        </option>
-
-        <option>
-          Sonstiges
-        </option>
-
-      </select>
+  </div>
 
 
-      <button
-        class="ec-main-btn ec-light-btn"
-        type="submit"
-      >
-        Problem melden
-      </button>
+  {% if active.status in ['ACCEPTED','TO_PICKUP','OFFERED'] %}
 
-    </form>
+  <a
+    class="ec-main-btn"
+    href="https://www.google.com/maps/dir/?api=1&destination={{active.pickup|urlencode}}"
+    target="_blank"
+    rel="noopener"
+  >
+    Route zum Abholort
+  </a>
 
-  </section>
+  {% elif active.status in ['PICKED_UP','TO_DESTINATION','ARRIVED'] %}
+
+  <a
+    class="ec-main-btn"
+    href="https://www.google.com/maps/dir/?api=1&destination={{active.destination|urlencode}}"
+    target="_blank"
+    rel="noopener"
+  >
+    Route zum Ziel
+  </a>
 
   {% endif %}
 
 
-  <!-- =====================================================
-       NEW ORDERS
-       ===================================================== -->
+  {% if active.status!='OFFERED' %}
 
-  <section
-    class="ec-orders-card"
-    id="neue"
+  <form
+    method="post"
+    action="{{url_for('driver_status',order_id=active.id)}}"
   >
 
-    <div class="ec-offers">
+    <button
+      class="ec-main-btn ec-light-btn"
+      type="submit"
+    >
 
-      {% for o in offers %}
+      Nächster Schritt:
 
-      <article class="ec-offer">
+      {{
+        {
+          'ACCEPTED':'Unterwegs zum Abholort',
+          'TO_PICKUP':'Patient abgeholt',
+          'PICKED_UP':'Unterwegs zum Ziel',
+          'TO_DESTINATION':'Angekommen',
+          'ARRIVED':'Transport abschließen'
+        }.get(active.status,'Weiter')
+      }}
 
-        <div class="ec-offer-top">
+    </button>
 
-          <span class="ec-offer-no">
-            {{o.order_no}}
-          </span>
+  </form>
 
-          <span class="ec-new-badge">
-            Neu
-          </span>
-
-        </div>
-
-
-        <h3>
-          {{o.pickup}}
-        </h3>
-
-
-        <div class="ec-offer-location">
-          {{o.destination}}
-          ·
-          {{o.transport_type|capitalize}}
-        </div>
+  {% endif %}
 
 
-        <div class="ec-offer-meta">
+  <form
+    method="post"
+    action="{{url_for('driver_problem',order_id=active.id)}}"
+  >
 
-          <span>
-            ♿
-            <b>
-              {{o.transport_type|capitalize}}
-            </b>
-          </span>
+    <select
+      class="ec-problem"
+      name="problem"
+    >
 
-          <span>
-            📍
-            {{o.destination}}
-          </span>
+      <option>
+        Patient nicht angetroffen
+      </option>
 
-          <span>
-            ◷
-            <b>
-              {{o.date}} · {{o.pickup_time}}
-            </b>
-          </span>
+      <option>
+        Fahrzeugproblem
+      </option>
 
-          <span>
-            ↗
-            {{o.pickup}}
-          </span>
+      <option>
+        Adresse falsch
+      </option>
 
-        </div>
+      <option>
+        Verspätung
+      </option>
+
+      <option>
+        Sonstiges
+      </option>
+
+    </select>
 
 
-        <!-- EXISTING ACCEPT ROUTE -->
+    <button
+      class="ec-main-btn ec-light-btn"
+      type="submit"
+    >
+      Problem melden
+    </button>
 
-        <form
-          method="post"
-          action="{{url_for('driver_accept',order_id=o.id)}}"
-        >
+  </form>
 
-          <button
-            class="ec-main-btn"
-            type="submit"
-          >
-            ✓ Annehmen
-          </button>
+</section>
 
-        </form>
+{% endif %}
 
-      </article>
 
-      {% else %}
+<!-- =====================================================
+     NEW ORDERS
+     ===================================================== -->
 
-      <div class="ec-empty">
-        Keine neuen passenden Aufträge.
+<section
+  class="ec-orders-card"
+  id="neue"
+>
+
+  <div class="ec-offers">
+
+    {% for o in offers %}
+
+    <article class="ec-offer">
+
+      <div class="ec-offer-top">
+
+        <span class="ec-offer-no">
+          {{o.order_no}}
+        </span>
+
+        <span class="ec-new-badge">
+          Neu
+        </span>
+
       </div>
 
-      {% endfor %}
 
-    </div>
-
-  </section>
-
-
-  <!-- =====================================================
-       QUICK ACCESS
-       ===================================================== -->
-
-  <section class="ec-quick">
-
-    <div class="ec-quick-head">
-
-      <strong>
-        Schnellzugriff
-      </strong>
-
-      <a href="{{url_for('reports')}}">
-        Alle Funktionen →
-      </a>
-
-    </div>
+      <h3>
+        {{o.pickup}}
+      </h3>
 
 
-    <div class="ec-quick-grid">
+      <div class="ec-offer-location">
+        {{o.destination}}
+        ·
+        {{o.transport_type|capitalize}}
+      </div>
 
-      <a
-        class="ec-quick-item"
-        href="https://www.google.com/maps"
-        target="_blank"
-        rel="noopener"
+
+      <div class="ec-offer-meta">
+
+        <span>
+          ♿
+          <b>
+            {{o.transport_type|capitalize}}
+          </b>
+        </span>
+
+        <span>
+          📍
+          {{o.destination}}
+        </span>
+
+        <span>
+          ◷
+          <b>
+            {{o.date}} · {{o.pickup_time}}
+          </b>
+        </span>
+
+        <span>
+          ↗
+          {{o.pickup}}
+        </span>
+
+      </div>
+
+
+      <form
+        method="post"
+        action="{{url_for('driver_accept',order_id=o.id)}}"
       >
-        <span class="icon">⌖</span>
-        <span>Karte</span>
-      </a>
 
+        <button
+          class="ec-main-btn"
+          type="submit"
+        >
+          ✓ Annehmen
+        </button>
 
-      <a
-        class="ec-quick-item"
-        href="{{url_for('reports')}}"
-      >
-        <span class="icon">◷</span>
-        <span>Arbeitszeit</span>
-      </a>
+      </form>
 
+    </article>
 
-      <a
-        class="ec-quick-item"
-        href="{{url_for('reports')}}"
-      >
-        <span class="icon">▥</span>
-        <span>Berichte</span>
-      </a>
+    {% else %}
 
-
-      <a
-        class="ec-quick-item"
-        href="{{url_for('dashboard')}}#settings"
-      >
-        <span class="icon">⚙</span>
-        <span>Einstellungen</span>
-      </a>
-
+    <div class="ec-empty">
+      Keine neuen passenden Aufträge.
     </div>
 
-  </section>
+    {% endfor %}
+
+  </div>
+
+</section>
 
 
-  <!-- =====================================================
-       STATUS
-       ===================================================== -->
+<!-- =====================================================
+     QUICK ACCESS
+     ===================================================== -->
 
-  <div class="ec-status">
+<section class="ec-quick">
 
-    <div class="ec-status-item">
+  <div class="ec-quick-head">
 
-      <b>
-        {% if driver.gps_enabled %}
-          GPS Bereit
-        {% else %}
-          GPS Aus
-        {% endif %}
-      </b>
+    <strong>
+      Schnellzugriff
+    </strong>
 
-      <span>
-        Standort
-      </span>
-
-    </div>
-
-
-    <div class="ec-status-item">
-
-      <b>
-        {% if driver.notification_enabled %}
-          Push Aktiv
-        {% else %}
-          Push Aus
-        {% endif %}
-      </b>
-
-      <span>
-        Benachrichtigung
-      </span>
-
-    </div>
-
-
-    <div class="ec-status-item">
-
-      <b>
-        Ja
-      </b>
-
-      <span>
-        Berechtigt
-      </span>
-
-    </div>
+    <a href="{{url_for('reports')}}">
+      Alle Funktionen →
+    </a>
 
   </div>
 
 
-  <!-- =====================================================
-       BOTTOM NAVIGATION
-       ===================================================== -->
+  <div class="ec-quick-grid">
 
-  <nav class="ec-bottom-nav">
 
     <a
-      class="ec-nav active"
-      href="#neue"
+      class="ec-quick-item"
+      href="https://www.google.com/maps"
+      target="_blank"
+      rel="noopener"
     >
 
       <span class="icon">
-        ▣
+        ⌖
       </span>
 
       <span>
-        Aufträge
-        {% if offers %}
-          <b>{{offers|length}}</b>
-        {% endif %}
+        Karte
       </span>
 
     </a>
 
 
     <a
-      class="ec-nav"
+      class="ec-quick-item"
       href="{{url_for('reports')}}"
     >
 
@@ -1696,14 +1925,14 @@
       </span>
 
       <span>
-        Verlauf
+        Arbeitszeit
       </span>
 
     </a>
 
 
     <a
-      class="ec-nav"
+      class="ec-quick-item"
       href="{{url_for('reports')}}"
     >
 
@@ -1719,51 +1948,245 @@
 
 
     <a
-      class="ec-nav"
-      href="#aktiv"
+      class="ec-quick-item"
+      href="#permissions"
     >
 
       <span class="icon">
-        ♙
+        ⚙
       </span>
 
       <span>
-        Fahrer
+        Einstellungen
       </span>
 
     </a>
 
-  </nav>
+  </div>
+
+</section>
 
 
-  <!-- Hidden GPS message – existing functionality preserved -->
+<!-- =====================================================
+     REAL PERMISSION COMMANDS
+     ===================================================== -->
 
-  <p
-    id="gpsmsg"
-    style="display:none"
-  ></p>
+<div
+  class="ec-permission"
+  id="permissions"
+>
+
+  <button
+    type="button"
+    class="ec-permission-btn"
+    onclick="sendGPS()"
+  >
+    📍 GPS aktivieren
+  </button>
+
+
+  <button
+    type="button"
+    class="ec-permission-btn"
+    onclick="enableNotifications()"
+  >
+    🔔 Benachrichtigungen aktivieren
+  </button>
+
+</div>
+
+
+<!-- =====================================================
+     STATUS
+     ===================================================== -->
+
+<div class="ec-status">
+
+  <div class="ec-status-item">
+
+    <b id="gpsStatus">
+
+      {% if driver.gps_enabled %}
+        GPS Bereit
+      {% else %}
+        GPS Aus
+      {% endif %}
+
+    </b>
+
+    <span>
+      Standort
+    </span>
+
+  </div>
+
+
+  <div class="ec-status-item">
+
+    <b id="pushStatus">
+
+      {% if driver.notification_enabled %}
+        Push Aktiv
+      {% else %}
+        Push Aus
+      {% endif %}
+
+    </b>
+
+    <span>
+      Benachrichtigung
+    </span>
+
+  </div>
+
+
+  <div class="ec-status-item">
+
+    <b>
+      Ja
+    </b>
+
+    <span>
+      Berechtigt
+    </span>
+
+  </div>
+
+</div>
+
+
+<!-- =====================================================
+     BOTTOM NAV
+     ===================================================== -->
+
+<nav class="ec-bottom-nav">
+
+  <a
+    class="ec-nav active"
+    href="#neue"
+  >
+
+    <span class="icon">
+      ▣
+    </span>
+
+    <span>
+      Aufträge
+
+      {% if offers %}
+        <b>{{offers|length}}</b>
+      {% endif %}
+
+    </span>
+
+  </a>
+
+
+  <a
+    class="ec-nav"
+    href="{{url_for('reports')}}"
+  >
+
+    <span class="icon">
+      ◷
+    </span>
+
+    <span>
+      Verlauf
+    </span>
+
+  </a>
+
+
+  <a
+    class="ec-nav"
+    href="{{url_for('reports')}}"
+  >
+
+    <span class="icon">
+      ▥
+    </span>
+
+    <span>
+      Berichte
+    </span>
+
+  </a>
+
+
+  <a
+    class="ec-nav"
+    href="#aktiv"
+  >
+
+    <span class="icon">
+      ♙
+    </span>
+
+    <span>
+      Fahrer
+    </span>
+
+  </a>
+
+</nav>
+
+
+<p
+  id="gpsmsg"
+  style="display:none"
+></p>
 
 </main>
 
 
 <script>
 
-/* =========================================================
-   EXISTING GPS FUNCTION
-   ========================================================= */
+/* =====================================================
+   GPS
+   ===================================================== */
 
 function sendGPS(){
 
-  const msg = document.getElementById('gpsmsg');
+  const msg =
+    document.getElementById(
+      'gpsmsg'
+    );
 
-  if(!navigator.geolocation){
+  const status =
+    document.getElementById(
+      'gpsStatus'
+    );
 
-    if(msg){
-      msg.textContent =
-        'GPS wird von diesem Gerät nicht unterstützt.';
+
+  if(
+    !navigator.geolocation
+  ){
+
+    if(status){
+      status.textContent =
+        'GPS nicht verfügbar';
+    }
+
+    if(
+      typeof showECMessage === 'function'
+    ){
+
+      showECMessage(
+        'GPS wird von diesem Gerät nicht unterstützt.'
+      );
+
     }
 
     return;
+  }
+
+
+  if(status){
+
+    status.textContent =
+      'GPS wird aktiviert...';
+
   }
 
 
@@ -1773,32 +2196,74 @@ function sendGPS(){
 
       try{
 
-        await fetch('/api/gps',{
+        const response =
+          await fetch(
+            '/api/gps',
+            {
+              method:'POST',
 
-          method:'POST',
+              headers:{
+                'Content-Type':
+                  'application/json'
+              },
 
-          headers:{
-            'Content-Type':'application/json'
-          },
+              body:JSON.stringify({
+                lat:
+                  position.coords.latitude,
 
-          body:JSON.stringify({
-            lat:position.coords.latitude,
-            lng:position.coords.longitude
-          })
+                lng:
+                  position.coords.longitude
+              })
+            }
+          );
 
-        });
 
+        if(!response.ok){
 
-        if(msg){
-          msg.textContent =
-            'GPS aktualisiert.';
+          throw new Error(
+            'GPS API error'
+          );
+
         }
 
-      }catch(e){
 
-        if(msg){
-          msg.textContent =
-            'GPS konnte nicht aktualisiert werden.';
+        if(status){
+
+          status.textContent =
+            'GPS Bereit';
+
+        }
+
+
+        if(
+          typeof showECMessage === 'function'
+        ){
+
+          showECMessage(
+            '✓ GPS wurde aktiviert und Position aktualisiert.'
+          );
+
+        }
+
+
+      }catch(error){
+
+        if(status){
+
+          status.textContent =
+            'GPS Fehler';
+
+        }
+
+
+        if(
+          typeof showECMessage === 'function'
+        ){
+
+          showECMessage(
+            'GPS konnte nicht aktualisiert werden.'
+          );
+
         }
 
       }
@@ -1806,13 +2271,45 @@ function sendGPS(){
     },
 
 
-    function(){
+    function(error){
 
-      if(msg){
-        msg.textContent =
-          'GPS-Berechtigung wurde nicht erteilt.';
+      if(status){
+
+        status.textContent =
+          'GPS Aus';
+
       }
 
+
+      if(
+        typeof showECMessage === 'function'
+      ){
+
+        if(
+          error &&
+          error.code === 1
+        ){
+
+          showECMessage(
+            'GPS-Berechtigung wurde nicht erteilt.'
+          );
+
+        }else{
+
+          showECMessage(
+            'GPS konnte nicht aktiviert werden.'
+          );
+
+        }
+
+      }
+
+    },
+
+    {
+      enableHighAccuracy:true,
+      timeout:10000,
+      maximumAge:30000
     }
 
   );
@@ -1820,26 +2317,70 @@ function sendGPS(){
 }
 
 
-/* =========================================================
-   EXISTING PUSH PERMISSION
-   ========================================================= */
+/* =====================================================
+   NOTIFICATION STATUS
+   ===================================================== */
 
-if(
-  {{1 if driver.notification_enabled else 0}}
-  &&
-  'Notification' in window
-  &&
-  Notification.permission === 'default'
-){
+async function updateNotificationStatus(){
 
-  Notification.requestPermission();
+  const status =
+    document.getElementById(
+      'pushStatus'
+    );
+
+
+  if(!status){
+    return;
+  }
+
+
+  if(
+    !('Notification' in window)
+  ){
+
+    status.textContent =
+      'Push nicht verfügbar';
+
+    return;
+  }
+
+
+  if(
+    Notification.permission ===
+    'granted'
+  ){
+
+    status.textContent =
+      'Push Aktiv';
+
+  }else if(
+    Notification.permission ===
+    'denied'
+  ){
+
+    status.textContent =
+      'Push Blockiert';
+
+  }else{
+
+    status.textContent =
+      'Push Aus';
+
+  }
 
 }
 
 
-/* =========================================================
-   EXISTING AUTO REFRESH
-   ========================================================= */
+/* =====================================================
+   INITIAL STATUS
+   ===================================================== */
+
+updateNotificationStatus();
+
+
+/* =====================================================
+   AUTO REFRESH
+   ===================================================== */
 
 setInterval(
   async function(){
