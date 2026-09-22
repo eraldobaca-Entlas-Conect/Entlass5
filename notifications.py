@@ -592,3 +592,4 @@ Transportverfolgung erforderlichen Informationen.
             False,
             str(exc)
         )
+        """ENTLASS-CONNECT family email notifications via Resend."""
