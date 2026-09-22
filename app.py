@@ -46,6 +46,8 @@ from reportlab.lib.styles import (
 
 from reportlab.lib.enums import TA_CENTER
 
+from notifications import send_family_tracking_email
+
 
 # =========================================================
 # APPLICATION
@@ -444,7 +446,9 @@ def init_db():
       direction TEXT DEFAULT 'hinfahrt',
       treatment_facility TEXT,
       distance_km REAL DEFAULT 12.4,
-      copay_cents INTEGER DEFAULT 0
+      copay_cents INTEGER DEFAULT 0,
+      family_email TEXT,
+      family_tracking_sent_at TEXT
     );
 
     CREATE TABLE IF NOT EXISTS shift_logs(
@@ -492,22 +496,6 @@ def init_db():
 
     # =====================================================
     # IMPORTANT DATABASE MIGRATION
-    # =====================================================
-    #
-    # Render already has an existing PostgreSQL database.
-    #
-    # CREATE TABLE IF NOT EXISTS does NOT change an existing
-    # table.
-    #
-    # Therefore we explicitly add every invoice column that
-    # may be missing from older installations.
-    #
-    # This fixes:
-    #
-    # psycopg.errors.UndefinedColumn:
-    # column "invoice_no" of relation "invoices"
-    # does not exist
-    #
     # =====================================================
 
     invoice_columns = [
@@ -563,15 +551,6 @@ def init_db():
 
         except Exception as exc:
 
-            # PostgreSQL uses ADD COLUMN IF NOT EXISTS
-            # through _convert_sql(), therefore an already
-            # existing column normally causes no problem.
-            #
-            # SQLite raises OperationalError if it already
-            # exists.
-            #
-            # Keep startup alive for an existing column.
-
             error_text = str(exc).lower()
 
             if (
@@ -580,8 +559,6 @@ def init_db():
                 "duplicate column" not in error_text
             ):
 
-                # Do not stop application startup for a
-                # legacy migration issue.
                 pass
 
 
@@ -609,6 +586,16 @@ def init_db():
         (
             "copay_cents",
             "INTEGER DEFAULT 0"
+        ),
+
+        (
+            "family_email",
+            "TEXT"
+        ),
+
+        (
+            "family_tracking_sent_at",
+            "TEXT"
         ),
 
     ]
@@ -2052,7 +2039,6 @@ def make_invoice(order):
 
 @app.context_processor
 def inject():
-
     return {
         "session_user":
             session.get("name"),
@@ -2193,19 +2179,24 @@ def login():
 
             session.clear()
 
+            session["user_id"] = u[
+                "id"
+            ]
 
-            session.update(
-                user_id=u["id"],
-                username=u["username"],
-                role=u["role"],
-                name=u["name"],
-            )
+            session["username"] = u[
+                "username"
+            ]
+
+            session["role"] = u[
+                "role"
+            ]
+
+            session["name"] = u[
+                "name"
+            ]
 
 
-            if (
-                u["role"]
-                == "driver"
-            ):
+            if u["role"] == "driver":
 
                 return redirect(
                     url_for("driver")
@@ -2217,35 +2208,25 @@ def login():
             )
 
 
-        error = (
-            "Benutzername oder "
-            "Passwort ist falsch."
-        )
-
-
-        if is_mobile_device():
-
-            return render_template(
-                "login_mobile_.html",
-                error=error
+        return render_template(
+            (
+                "login_mobile_.html"
+                if is_mobile_device()
+                else "login.html"
+            ),
+            error=(
+                "Benutzername oder "
+                "Passwort falsch."
             )
-
-
-        return render_template(
-            "login.html",
-            error=error
-        )
-
-
-    if is_mobile_device():
-
-        return render_template(
-            "login_mobile_.html"
         )
 
 
     return render_template(
-        "login.html"
+        (
+            "login_mobile_.html"
+            if is_mobile_device()
+            else "login.html"
+        )
     )
 
 
@@ -2253,13 +2234,15 @@ def login():
 # LOGOUT
 # =========================================================
 
-@app.get("/logout")
+@app.route(
+    "/logout"
+)
 def logout():
 
     session.clear()
 
     return redirect(
-        url_for("login")
+        url_for("index")
     )
 
 
@@ -2267,38 +2250,53 @@ def logout():
 # DASHBOARD
 # =========================================================
 
-@app.get("/dashboard")
+@app.route(
+    "/dashboard"
+)
 @login_required([
     "admin",
     "dispatcher",
-    "hospital",
-    "driver"
+    "hospital"
 ])
 def dashboard():
-
-    if session.get(
-        "role"
-    ) == "driver":
-
-        return redirect(
-            url_for("driver")
-        )
-
 
     c = db()
 
 
-    orders = c.execute(
+    stats = {}
+
+
+    for status in STATUS:
+
+        row = c.execute(
+            """
+            SELECT COUNT(*) AS n
+            FROM orders
+            WHERE status=?
+            """,
+            (
+                status,
+            )
+        ).fetchone()
+
+
+        stats[status] = (
+            row["n"]
+            if row
+            else 0
+        )
+
+
+    recent = c.execute(
         """
         SELECT
             o.*,
-            o.id AS order_id,
-            d.name AS driver_name
+            d.name driver_name
         FROM orders o
         LEFT JOIN drivers d
             ON d.id=o.driver_id
         ORDER BY o.id DESC
-        LIMIT 50
+        LIMIT 100
         """
     ).fetchall()
 
@@ -2307,78 +2305,9 @@ def dashboard():
         """
         SELECT *
         FROM drivers
-        ORDER BY capability,name
+        ORDER BY name
         """
     ).fetchall()
-
-
-    alerts = c.execute(
-        """
-        SELECT *
-        FROM orders
-        WHERE status IN ('PROBLEM')
-        OR status='NEW'
-        ORDER BY id DESC
-        LIMIT 10
-        """
-    ).fetchall()
-
-
-    invoices = c.execute(
-        """
-        SELECT *
-        FROM invoices
-        ORDER BY id DESC
-        LIMIT 10
-        """
-    ).fetchall()
-
-
-    stats = {
-
-        "today": c.execute(
-            """
-            SELECT COUNT(*) n
-            FROM orders
-            WHERE date=?
-            """,
-            (
-                datetime.now()
-                .date()
-                .isoformat(),
-            )
-        ).fetchone()["n"],
-
-
-        "open": c.execute(
-            """
-            SELECT COUNT(*) n
-            FROM orders
-            WHERE status NOT IN(
-                'COMPLETED',
-                'CANCELLED'
-            )
-            """
-        ).fetchone()["n"],
-
-
-        "available": c.execute(
-            """
-            SELECT COUNT(*) n
-            FROM drivers
-            WHERE available=1
-            """
-        ).fetchone()["n"],
-
-
-        "completed": c.execute(
-            """
-            SELECT COUNT(*) n
-            FROM orders
-            WHERE status='COMPLETED'
-            """
-        ).fetchone()["n"],
-    }
 
 
     c.close()
@@ -2386,11 +2315,9 @@ def dashboard():
 
     return render_template(
         "dashboard.html",
-        orders=orders,
-        drivers=drivers,
-        invoices=invoices,
         stats=stats,
-        alerts=alerts
+        orders=recent,
+        drivers=drivers
     )
 
 
@@ -2412,470 +2339,254 @@ def dashboard():
 ])
 def new_order():
 
-    if request.method == "POST":
+    if request.method == "GET":
 
-        c = db()
-
-        data = request.form
-
-
-        token = secrets.token_urlsafe(
-            20
+        return render_template(
+            "new_order.html"
         )
 
 
-        now = datetime.utcnow().isoformat()
+    data = request.form
 
-
-        # -------------------------------------------------
-        # CREATE ORDER
-        # -------------------------------------------------
-
-        c.execute(
-            """
-            INSERT INTO orders(
-                order_no,
-                patient_name,
-                patient_ref,
-                pickup,
-                destination,
-                transport_type,
-                date,
-                pickup_time,
-                payer,
-                insurance_no,
-                approval,
-                reason,
-                notes,
-                status,
-                created_by,
-                created_at,
-                tracking_token,
-                price_cents,
-                direction,
-                treatment_facility,
-                distance_km,
-                copay_cents
-            )
-            VALUES(
-                ?,?,?,?,?,?,?,?,?,?,
-                ?,?,?,?,?,?,?,?,?,?,
-                ?,?
-            )
-            """,
-            (
-                f"AU{datetime.now():%y%m%d%H%M%S}",
-
-                data.get(
-                    "patient_name",
-                    ""
-                ),
-
-                data.get(
-                    "patient_ref",
-                    ""
-                ),
-
-                data["pickup"],
-
-                data["destination"],
-
-                data["transport_type"],
-
-                data["date"],
-
-                data["pickup_time"],
-
-                data.get(
-                    "payer",
-                    ""
-                ),
-
-                data.get(
-                    "insurance_no",
-                    ""
-                ),
-
-                data.get(
-                    "approval",
-                    "unknown"
-                ),
-
-                data.get(
-                    "reason",
-                    ""
-                ),
-
-                data.get(
-                    "notes",
-                    ""
-                ),
-
-                "NEW",
-
-                session[
-                    "user_id"
-                ],
-
-                now,
-
-                token,
-
-                0,
-
-                data.get(
-                    "direction",
-                    "hinfahrt"
-                ),
-
-                data.get(
-                    "treatment_facility",
-                    ""
-                ),
-
-                float(
-                    data.get(
-                        "distance_km"
-                    )
-                    or 12.4
-                ),
-
-                0
-            )
-        )
-
-
-        # =================================================
-        # IMPORTANT:
-        #
-        # We retrieve the order by tracking_token instead
-        # of relying on last_insert_id().
-        # =================================================
-
-        order_row = c.execute(
-            """
-            SELECT *
-            FROM orders
-            WHERE tracking_token=?
-            """,
-            (
-                token,
-            )
-        ).fetchone()
-
-
-        if not order_row:
-
-            try:
-                c.raw.rollback()
-            except Exception:
-                pass
-
-            c.close()
-
-
-            raise RuntimeError(
-                "Auftrag wurde erstellt, "
-                "konnte aber anschließend "
-                "nicht aus der Datenbank "
-                "gelesen werden."
-            )
-
-
-        oid = order_row[
-            "id"
-        ]
-
-
-        # -------------------------------------------------
-        # INITIAL EVENT
-        # -------------------------------------------------
-
-        c.execute(
-            """
-            INSERT INTO events(
-                order_id,
-                status,
-                note,
-                created_at
-            )
-            VALUES(?,?,?,?)
-            """,
-            (
-                oid,
-                "NEW",
-                "Auftrag erstellt",
-                now
-            )
-        )
-
-
-        c.commit()
-
-
-        # -------------------------------------------------
-        # AUTOMATIC DISPATCH
-        # -------------------------------------------------
-
-        candidates = c.execute(
-            """
-            SELECT *
-            FROM drivers
-            WHERE available=1
-            AND shift_active=1
-            """
-        ).fetchall()
-
-
-        eligible = [
-
-            d
-
-            for d in candidates
-
-            if capability_ok(
-                d["capability"],
-                order_row[
-                    "transport_type"
-                ]
-            )
-
-        ]
-
-
-        if eligible:
-
-            d = max(
-                eligible,
-                key=lambda x:
-                    driver_score(
-                        x,
-                        order_row
-                    )[0]
-            )
-
-
-            c.execute(
-                """
-                UPDATE orders
-                SET
-                    driver_id=?,
-                    status='OFFERED'
-                WHERE id=?
-                """,
-                (
-                    d["id"],
-                    oid
-                )
-            )
-
-
-            c.execute(
-                """
-                UPDATE drivers
-                SET last_offer_at=?
-                WHERE id=?
-                """,
-                (
-                    datetime.utcnow()
-                    .isoformat(),
-                    d["id"]
-                )
-            )
-
-
-            c.execute(
-                """
-                INSERT INTO events(
-                    order_id,
-                    status,
-                    note,
-                    created_at
-                )
-                VALUES(?,?,?,?)
-                """,
-                (
-                    oid,
-                    "OFFERED",
-                    (
-                        f"Automatisches Angebot "
-                        f"an {d['name']} – 5 Minuten"
-                    ),
-                    datetime.utcnow()
-                    .isoformat()
-                )
-            )
-
-
-        else:
-
-            c.execute(
-                """
-                INSERT INTO events(
-                    order_id,
-                    status,
-                    note,
-                    created_at
-                )
-                VALUES(?,?,?,?)
-                """,
-                (
-                    oid,
-                    "ALARM",
-                    (
-                        "Kein passender Fahrer "
-                        "verfügbar – "
-                        "Dispatcher/Admin "
-                        "muss eingreifen."
-                    ),
-                    datetime.utcnow()
-                    .isoformat()
-                )
-            )
-
-
-        c.commit()
-        c.close()
-
-
-        if session.get(
-            "role"
-        ) in (
-            "admin",
-            "dispatcher"
-        ):
-
-            return redirect(
-                url_for(
-                    "dispatch",
-                    order_id=oid
-                )
-            )
-
-
-        return redirect(
-            url_for("dashboard")
-        )
-
-
-    return render_template(
-        "new_order.html",
-        today=datetime.now()
-        .date()
-        .isoformat()
-    )
-
-
-# =========================================================
-# DRIVER SCORE
-# =========================================================
-
-def driver_score(
-    d,
-    order
-):
-
-    dist = distance_km(
-        d["lat"],
-        d["lng"],
-        50.1109,
-        8.6821
-    )
-
-
-    dist_score = max(
-        0.0,
-        100.0
-        -
-        min(
-            dist,
-            20.0
-        )
-        * 5.0
-    )
-
-
-    capability_score = (
-
-        100.0
-
-        if
-        d["capability"]
-        ==
-        order[
-            "transport_type"
-        ]
-
-        else (
-
-            92.0
-
-            if
-            d["capability"]
-            in (
-                "liege",
-                "rollstuhl"
-            )
-
-            else 85.0
-
-        )
-    )
-
-
-    availability_score = (
-
-        100.0
-
-        if
-        d["available"]
-        and
-        d["shift_active"]
-
-        else 0.0
-    )
-
-
-    score = round(
-        capability_score * .40
-        +
-        availability_score * .25
-        +
-        dist_score * .35,
-        1
-    )
-
-
-    return (
-        score,
-        round(
-            dist,
-            1
-        )
-    )
-
-
-# =========================================================
-# DISPATCH
-# =========================================================
-
-@app.get(
-    "/dispatch/<int:order_id>"
-)
-@login_required([
-    "admin",
-    "dispatcher"
-])
-def dispatch(order_id):
 
     c = db()
 
 
-    o = c.execute(
+    # =====================================================
+    # ORDER NUMBER
+    # =====================================================
+
+    now = datetime.now()
+
+
+    order_no = (
+        f"EC-{now:%Y%m%d}-"
+        f"{now:%H%M%S}-"
+        f"{secrets.token_hex(2).upper()}"
+    )
+
+
+    tracking_token = (
+        secrets.token_urlsafe(
+            20
+        )
+    )
+
+
+    # =====================================================
+    # CREATE ORDER
+    # =====================================================
+
+    cur = c.execute(
         """
-        SELECT *
-        FROM orders
-        WHERE id=?
+        INSERT INTO orders(
+            order_no,
+            patient_name,
+            patient_ref,
+            pickup,
+            destination,
+            transport_type,
+            date,
+            pickup_time,
+            payer,
+            insurance_no,
+            approval,
+            reason,
+            notes,
+            status,
+            created_by,
+            created_at,
+            tracking_token,
+            price_cents,
+            direction,
+            treatment_facility,
+            distance_km,
+            copay_cents,
+            family_email
+        )
+        VALUES(
+            ?,?,?,?,?,?,?,?,?,?,
+            ?,?,?,?,?,?,?,?,?,?,
+            ?,?,?
+        )
+        """,
+        (
+            order_no,
+
+            data.get(
+                "patient_name",
+                ""
+            ).strip(),
+
+            data.get(
+                "patient_ref",
+                ""
+            ).strip(),
+
+            data.get(
+                "pickup",
+                ""
+            ).strip(),
+
+            data.get(
+                "destination",
+                ""
+            ).strip(),
+
+            data.get(
+                "transport_type",
+                "sitzend"
+            ).strip(),
+
+            data.get(
+                "date",
+                ""
+            ).strip(),
+
+            data.get(
+                "pickup_time",
+                ""
+            ).strip(),
+
+            data.get(
+                "payer",
+                ""
+            ).strip(),
+
+            data.get(
+                "insurance_no",
+                ""
+            ).strip(),
+
+            data.get(
+                "approval",
+                ""
+            ).strip(),
+
+            data.get(
+                "reason",
+                ""
+            ).strip(),
+
+            data.get(
+                "notes",
+                ""
+            ).strip(),
+
+            "NEW",
+
+            session[
+                "user_id"
+            ],
+
+            datetime.utcnow()
+            .isoformat(),
+
+            tracking_token,
+
+            0,
+
+            data.get(
+                "direction",
+                "hinfahrt"
+            ).strip(),
+
+            data.get(
+                "treatment_facility",
+                ""
+            ).strip(),
+
+            float(
+                data.get(
+                    "distance_km"
+                )
+                or 12.4
+            ),
+
+            0,
+
+            data.get(
+                "family_email",
+                ""
+            ).strip()
+        )
+    )
+
+
+    order_id = (
+        c.last_insert_id()
+    )
+
+
+    # =====================================================
+    # EVENT
+    # =====================================================
+
+    c.execute(
+        """
+        INSERT INTO events(
+            order_id,
+            status,
+            note,
+            created_at
+        )
+        VALUES(?,?,?,?)
+        """,
+        (
+            order_id,
+            "NEW",
+            (
+                "Auftrag erstellt von "
+                f"{session.get('name', 'User')}"
+            ),
+            datetime.utcnow()
+            .isoformat()
+        )
+    )
+
+
+    c.commit()
+    c.close()
+
+
+    return redirect(
+        url_for(
+            "order_detail",
+            order_id=order_id
+        )
+    )
+
+
+# =========================================================
+# ORDER DETAIL
+# =========================================================
+
+@app.route(
+    "/orders/<int:order_id>"
+)
+@login_required([
+    "admin",
+    "dispatcher",
+    "hospital",
+    "driver"
+])
+def order_detail(
+    order_id
+):
+
+    c = db()
+
+
+    order = c.execute(
+        """
+        SELECT
+            o.*,
+            d.name driver_name,
+            d.phone driver_phone
+        FROM orders o
+        LEFT JOIN drivers d
+            ON d.id=o.driver_id
+        WHERE o.id=?
         """,
         (
             order_id,
@@ -2883,78 +2594,56 @@ def dispatch(order_id):
     ).fetchone()
 
 
-    drivers = c.execute(
+    if not order:
+
+        c.close()
+
+        abort(404)
+
+
+    events = c.execute(
         """
         SELECT *
-        FROM drivers
-        WHERE available=1
-        AND shift_active=1
-        """
+        FROM events
+        WHERE order_id=?
+        ORDER BY id
+        """,
+        (
+            order_id,
+        )
     ).fetchall()
 
 
     c.close()
 
 
-    if not o:
-        abort(404)
-
-
-    ranked = []
-
-
-    for d in drivers:
-
-        if capability_ok(
-            d["capability"],
-            o["transport_type"]
-        ):
-
-            score, dist = driver_score(
-                d,
-                o
-            )
-
-
-            ranked.append(
-                (
-                    score,
-                    dist,
-                    d
-                )
-            )
-
-
-    ranked.sort(
-        key=lambda x: x[0],
-        reverse=True
-    )
-
-
     return render_template(
-        "dispatch.html",
-        order=o,
-        ranked=ranked
+        "order_detail.html",
+        order=order,
+        events=events
     )
 
 
 # =========================================================
-# API DISPATCH
+# ORDER OFFER
 # =========================================================
 
 @app.post(
-    "/api/dispatch/<int:order_id>"
+    "/orders/<int:order_id>/offer"
 )
 @login_required([
     "admin",
-    "dispatcher"
+    "dispatcher",
+    "hospital"
 ])
-def api_dispatch(order_id):
+def offer_order(
+    order_id
+):
 
     c = db()
 
 
-    o = c.execute(
+    order = c.execute(
         """
         SELECT *
         FROM orders
@@ -2966,157 +2655,21 @@ def api_dispatch(order_id):
     ).fetchone()
 
 
-    if not o:
+    if not order:
 
-        return (
-            jsonify(
-                error="not found"
-            ),
-            404
-        )
+        c.close()
 
-
-    requested_driver_id = (
-        request
-        .get_json(
-            silent=True
-        )
-    )
-
-
-    requested_driver_id = (
-        requested_driver_id.get(
-            "driver_id"
-        )
-        if requested_driver_id
-        else None
-    )
-
-
-    if requested_driver_id:
-
-        d = c.execute(
-            """
-            SELECT *
-            FROM drivers
-            WHERE id=?
-            """,
-            (
-                requested_driver_id,
-            )
-        ).fetchone()
-
-
-        if (
-            not d
-            or
-            not d["available"]
-            or
-            not capability_ok(
-                d["capability"],
-                o["transport_type"]
-            )
-        ):
-
-            c.close()
-
-
-            return (
-                jsonify(
-                    error=(
-                        "Dieser Fahrer ist "
-                        "nicht verfügbar "
-                        "oder nicht für "
-                        "die Transportart "
-                        "geeignet."
-                    )
-                ),
-                409
-            )
-
-
-    else:
-
-        candidates = c.execute(
-            """
-            SELECT *
-            FROM drivers
-            WHERE available=1
-            AND shift_active=1
-            """
-        ).fetchall()
-
-
-        eligible = [
-
-            d
-
-            for d in candidates
-
-            if capability_ok(
-                d["capability"],
-                o["transport_type"]
-            )
-
-        ]
-
-
-        if not eligible:
-
-            c.close()
-
-
-            return (
-                jsonify(
-                    error=(
-                        "Kein passender Fahrer "
-                        "verfügbar. "
-                        "Dispatcher/Admin "
-                        "wird informiert."
-                    ),
-                    alarm=True
-                ),
-                409
-            )
-
-
-        d = max(
-            eligible,
-            key=lambda x:
-                driver_score(
-                    x,
-                    o
-                )[0]
-        )
-
-
-    now = datetime.utcnow().isoformat()
+        abort(404)
 
 
     c.execute(
         """
         UPDATE orders
-        SET
-            driver_id=?,
-            status='OFFERED'
+        SET status='OFFERED'
         WHERE id=?
         """,
         (
-            d["id"],
-            order_id
-        )
-    )
-
-
-    c.execute(
-        """
-        UPDATE drivers
-        SET last_offer_at=?
-        WHERE id=?
-        """,
-        (
-            now,
-            d["id"]
+            order_id,
         )
     )
 
@@ -3134,11 +2687,9 @@ def api_dispatch(order_id):
         (
             order_id,
             "OFFERED",
-            (
-                f"Angebot an "
-                f"{d['name']} – 5 Minuten"
-            ),
-            now
+            "Auftrag an Fahrer angeboten",
+            datetime.utcnow()
+            .isoformat()
         )
     )
 
@@ -3147,26 +2698,11 @@ def api_dispatch(order_id):
     c.close()
 
 
-    return jsonify(
-        driver=d["name"],
-        expires_in_seconds=300
-    )
-
-
-# =========================================================
-# MOBILE DRIVER URL
-# =========================================================
-
-@app.get(
-    "/fahrer-mobile"
-)
-@login_required([
-    "driver"
-])
-def fahrer_mobile():
-
     return redirect(
-        url_for("driver")
+        url_for(
+            "order_detail",
+            order_id=order_id
+        )
     )
 
 
@@ -3174,7 +2710,7 @@ def fahrer_mobile():
 # DRIVER
 # =========================================================
 
-@app.get(
+@app.route(
     "/driver"
 )
 @login_required([
@@ -3192,40 +2728,46 @@ def driver():
         WHERE user_id=?
         """,
         (
-            session["user_id"],
+            session[
+                "user_id"
+            ],
         )
     ).fetchone()
 
 
-    active = c.execute(
-        """
-        SELECT
-            o.*,
-            d.name driver_name
-        FROM orders o
-        JOIN drivers d
-            ON d.id=o.driver_id
-        WHERE o.driver_id=?
-        AND o.status NOT IN(
-            'COMPLETED',
-            'CANCELLED'
-        )
-        ORDER BY o.id DESC
-        LIMIT 1
-        """,
-        (
-            d["id"],
-        )
-    ).fetchone()
+    if not d:
+
+        c.close()
+
+        abort(403)
 
 
-    offers = c.execute(
+    orders = c.execute(
         """
-        SELECT o.*
-        FROM orders o
-        WHERE o.driver_id=?
-        AND o.status='OFFERED'
-        ORDER BY o.id DESC
+        SELECT *
+        FROM orders
+        WHERE status IN(
+            'OFFERED',
+            'ACCEPTED',
+            'TO_PICKUP',
+            'PICKED_UP',
+            'TO_DESTINATION',
+            'ARRIVED'
+        )
+        AND (
+            driver_id=?
+            OR (
+                status='OFFERED'
+                AND driver_id IS NULL
+            )
+        )
+        ORDER BY
+            CASE
+                WHEN status='OFFERED'
+                THEN 0
+                ELSE 1
+            END,
+            id DESC
         """,
         (
             d["id"],
@@ -3239,34 +2781,188 @@ def driver():
     return render_template(
         "driver.html",
         driver=d,
-        active=active,
-        offers=offers
+        orders=orders
     )
 
 
 # =========================================================
-# DRIVER AVAILABILITY
+# DRIVER ACCEPT
 # =========================================================
 
 @app.post(
-    "/driver/availability"
+    "/driver/accept/<int:order_id>"
 )
 @login_required([
     "driver"
 ])
-def driver_availability():
+def driver_accept(
+    order_id
+):
 
-    val = (
-        1
-        if
-        request.form.get(
-            "available"
-        ) == "1"
-        else 0
+    c = db()
+
+
+    d = c.execute(
+        """
+        SELECT *
+        FROM drivers
+        WHERE user_id=?
+        """,
+        (
+            session[
+                "user_id"
+            ],
+        )
+    ).fetchone()
+
+
+    o = c.execute(
+        """
+        SELECT *
+        FROM orders
+        WHERE id=?
+        """,
+        (
+            order_id,
+        )
+    ).fetchone()
+
+
+    if (
+        not d
+        or not o
+        or not capability_ok(
+            d["capability"],
+            o["transport_type"]
+        )
+    ):
+
+        c.close()
+
+        abort(403)
+
+
+    c.execute(
+        """
+        UPDATE orders
+        SET
+            driver_id=?,
+            status='ACCEPTED',
+            accepted_at=?
+        WHERE id=?
+        """,
+        (
+            d["id"],
+            datetime.utcnow()
+            .isoformat(),
+            order_id
+        )
     )
 
 
-    now = datetime.utcnow().isoformat()
+    c.execute(
+        """
+        UPDATE drivers
+        SET available=0
+        WHERE id=?
+        """,
+        (
+            d["id"],
+        )
+    )
+
+
+    c.execute(
+        """
+        INSERT INTO events(
+            order_id,
+            status,
+            note,
+            created_at
+        )
+        VALUES(?,?,?,?)
+        """,
+        (
+            order_id,
+            "ACCEPTED",
+            (
+                f"Angenommen "
+                f"von {d['name']}"
+            ),
+            datetime.utcnow()
+            .isoformat()
+        )
+    )
+
+
+    c.commit()
+
+
+    accepted_order = c.execute(
+        """
+        SELECT *
+        FROM orders
+        WHERE id=?
+        """,
+        (
+            order_id,
+        )
+    ).fetchone()
+
+
+    c.close()
+
+
+    if (
+        accepted_order
+        and accepted_order["family_email"]
+        and not accepted_order["family_tracking_sent_at"]
+    ):
+
+        try:
+
+            send_family_tracking_email(
+                accepted_order,
+                d["name"]
+            )
+
+        except Exception:
+
+            # Email failure must never block
+            # driver acceptance.
+            pass
+
+
+    return redirect(
+        url_for("driver")
+    )
+
+
+# =========================================================
+# DRIVER STATUS UPDATE
+# =========================================================
+
+@app.post(
+    "/driver/status/<int:order_id>"
+)
+@login_required([
+    "driver"
+])
+def driver_status(
+    order_id
+):
+
+    new_status = (
+        request.form.get(
+            "status"
+        )
+        or ""
+    ).strip().upper()
+
+
+    if new_status not in STATUS:
+
+        abort(400)
 
 
     c = db()
@@ -3279,6 +2975,113 @@ def driver_availability():
         WHERE user_id=?
         """,
         (
+            session[
+                "user_id"
+            ],
+        )
+    ).fetchone()
+
+
+    order = c.execute(
+        """
+        SELECT *
+        FROM orders
+        WHERE id=?
+        """,
+        (
+            order_id,
+        )
+    ).fetchone()
+
+
+    if (
+        not d
+        or not order
+        or order["driver_id"] != d["id"]
+    ):
+
+        c.close()
+
+        abort(403)
+
+
+    c.execute(
+        """
+        UPDATE orders
+        SET status=?
+        WHERE id=?
+        """,
+        (
+            new_status,
+            order_id
+        )
+    )
+
+
+    if new_status == "COMPLETED":
+
+        c.execute(
+            """
+            UPDATE orders
+            SET completed_at=?
+            WHERE id=?
+            """,
+            (
+                datetime.utcnow()
+                .isoformat(),
+                order_id
+            )
+        )
+
+        c.execute(
+            """
+            UPDATE drivers
+            SET available=1
+            WHERE id=?
+            """,
+            (
+                d["id"],
+            )
+        )
+
+
+    c.execute(
+        """
+        INSERT INTO events(
+            order_id,
+            status,
+            note,
+            created_at,
+            lat,
+            lng
+        )
+        VALUES(?,?,?,?,?,?)
+        """,
+        (
+            order_id,
+            new_status,
+            (
+                f"Status geändert von "
+                f"{d['name']}"
+            ),
+            datetime.utcnow()
+            .isoformat(),
+            d["lat"],
+            d["lng"]
+        )
+    )
+
+
+    c.commit()
+    c.close()
+
+
+    return redirect(
+        url_for(
+            "order_detail",
+            order_id=order_id
+        )
+                (
             session["user_id"],
         )
     ).fetchone()
@@ -3731,8 +3534,70 @@ def driver_accept(order_id):
     )
 
 
+    # =====================================================
+    # COMMIT FIRST
+    # =====================================================
+
     c.commit()
+
+
+    # =====================================================
+    # GET ACCEPTED ORDER
+    # =====================================================
+
+    accepted_order = c.execute(
+        """
+        SELECT *
+        FROM orders
+        WHERE id=?
+        """,
+        (
+            order_id,
+        )
+    ).fetchone()
+
+
     c.close()
+
+
+    # =====================================================
+    # FAMILY TRACKING EMAIL
+    # =====================================================
+    #
+    # IMPORTANT:
+    # The driver acceptance is already committed above.
+    #
+    # Therefore a Resend/API/network error can NEVER
+    # cancel or block the driver's acceptance.
+    #
+    # Email is only sent when:
+    #
+    # 1. family_email exists
+    # 2. family_tracking_sent_at is empty
+    #
+    # notifications.py additionally checks email_log
+    # so the email is only sent once.
+    #
+    # =====================================================
+
+    if (
+        accepted_order
+        and accepted_order["family_email"]
+        and not accepted_order["family_tracking_sent_at"]
+    ):
+
+        try:
+
+            send_family_tracking_email(
+                accepted_order,
+                d["name"]
+            )
+
+        except Exception:
+
+            # Email failure must never block
+            # driver acceptance.
+            pass
 
 
     return redirect(
@@ -4398,24 +4263,539 @@ def health():
         "status": "ok",
         "app": "ENTLASS-CONNECT"
     }
+    """ENTLASS-CONNECT family email notifications via Resend."""
+
+import json
+import os
+import urllib.request
+from datetime import datetime
+from html import escape
+
+from flask import url_for
 
 
-# =========================================================
-# START
-# =========================================================
+def _db():
+    """
+    Import db lazily from app.py.
 
-init_db()
+    This avoids a circular import because app.py
+    imports send_family_tracking_email from this module.
+    """
+    from app import db
+    return db()
 
 
-if __name__ == "__main__":
+def send_family_tracking_email(
+    order,
+    driver_name=""
+):
+    """
+    Send the family tracking email once via Resend.
 
-    app.run(
-        host="0.0.0.0",
-        port=int(
-            os.getenv(
-                "PORT",
-                5000
-            )
-        ),
-        debug=True
+    No WhatsApp.
+    No SMS.
+    No Share button.
+    No diagnosis.
+    No insurance number.
+    No patient reference.
+    """
+
+    recipient = (
+        order["family_email"]
+        or ""
+    ).strip()
+
+    if not recipient:
+        return (
+            False,
+            "Keine Familien-E-Mail hinterlegt."
+        )
+
+
+    api_key = (
+        os.getenv(
+            "RESEND_API_KEY",
+            ""
+        ).strip()
     )
+
+
+    from_email = (
+        os.getenv(
+            "RESEND_FROM_EMAIL",
+            ""
+        ).strip()
+    )
+
+
+    from_name = (
+        os.getenv(
+            "RESEND_FROM_NAME",
+            "ENTLASS-CONNECT"
+        ).strip()
+    )
+
+
+    if not api_key:
+        return (
+            False,
+            "RESEND_API_KEY fehlt."
+        )
+
+
+    if not from_email:
+        return (
+            False,
+            "RESEND_FROM_EMAIL fehlt."
+        )
+
+
+    # =====================================================
+    # CHECK WHETHER THIS EMAIL WAS ALREADY SENT
+    # =====================================================
+
+    c = _db()
+
+    try:
+
+        already_sent = c.execute(
+            """
+            SELECT id
+            FROM email_log
+            WHERE order_id=?
+            AND sent=1
+            LIMIT 1
+            """,
+            (
+                order["id"],
+            )
+        ).fetchone()
+
+
+        already_marked = (
+            order["family_tracking_sent_at"]
+            if "family_tracking_sent_at"
+            in order.keys()
+            else None
+        )
+
+    finally:
+
+        c.close()
+
+
+    if (
+        already_sent
+        or
+        already_marked
+    ):
+
+        return (
+            True,
+            "Bereits gesendet."
+        )
+
+
+    # =====================================================
+    # PUBLIC TRACKING URL
+    # =====================================================
+
+    base_url = (
+        os.getenv(
+            "PUBLIC_BASE_URL",
+            ""
+        )
+        .strip()
+        .rstrip("/")
+    )
+
+
+    tracking_path = url_for(
+        "track",
+        token=order[
+            "tracking_token"
+        ]
+    )
+
+
+    if base_url:
+
+        tracking_url = (
+            base_url
+            +
+            tracking_path
+        )
+
+    else:
+
+        tracking_url = url_for(
+            "track",
+            token=order[
+                "tracking_token"
+            ],
+            _external=True
+        )
+
+
+    # =====================================================
+    # SAFE HTML VALUES
+    # =====================================================
+
+    safe_order_no = escape(
+        order["order_no"]
+        or ""
+    )
+
+
+    safe_driver = escape(
+        driver_name
+        or "zugewiesener Fahrer"
+    )
+
+
+    safe_tracking_url = escape(
+        tracking_url,
+        quote=True
+    )
+
+
+    subject = (
+        "ENTLASS-CONNECT – "
+        f"Transport {order['order_no']} angenommen"
+    )
+
+
+    # =====================================================
+    # EMAIL HTML
+    # =====================================================
+
+    html = f"""
+<!doctype html>
+
+<html lang="de">
+
+<head>
+
+<meta charset="utf-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+>
+
+<title>
+    ENTLASS-CONNECT
+</title>
+
+</head>
+
+
+<body
+    style="
+        margin:0;
+        padding:0;
+        background:#f4f7f8;
+        font-family:Arial,sans-serif;
+        color:#17324d;
+    "
+>
+
+<div
+    style="
+        max-width:620px;
+        margin:30px auto;
+        background:#ffffff;
+        border-radius:12px;
+        padding:30px;
+        box-sizing:border-box;
+    "
+>
+
+<h2
+    style="
+        margin-top:0;
+        color:#17324d;
+    "
+>
+    ENTLASS-CONNECT
+</h2>
+
+
+<p>
+    Der Patiententransport wurde angenommen.
+</p>
+
+
+<div
+    style="
+        background:#eef7f4;
+        border-radius:8px;
+        padding:16px;
+        margin:20px 0;
+    "
+>
+
+<p style="margin:5px 0;">
+
+<strong>
+Auftrag:
+</strong>
+
+{safe_order_no}
+
+</p>
+
+
+<p style="margin:5px 0;">
+
+<strong>
+Fahrer:
+</strong>
+
+{safe_driver}
+
+</p>
+
+</div>
+
+
+<p>
+    Über den folgenden Link können Sie den
+    aktuellen Transportstatus abrufen:
+</p>
+
+
+<p style="margin:25px 0;">
+
+<a
+    href="{safe_tracking_url}"
+    style="
+        display:inline-block;
+        padding:13px 20px;
+        background:#2e9a8b;
+        color:#ffffff;
+        text-decoration:none;
+        border-radius:8px;
+        font-weight:bold;
+    "
+>
+Transport verfolgen
+</a>
+
+</p>
+
+
+<p
+    style="
+        font-size:12px;
+        color:#667781;
+    "
+>
+Dieser Link enthält nur die für die
+Transportverfolgung erforderlichen Informationen.
+</p>
+
+
+</div>
+
+</body>
+
+</html>
+"""
+
+
+    # =====================================================
+    # RESEND PAYLOAD
+    # =====================================================
+
+    payload = {
+
+        "from": (
+            f"{from_name} <{from_email}>"
+            if from_name
+            else from_email
+        ),
+
+        "to": [
+            recipient
+        ],
+
+        "subject":
+            subject,
+
+        "html":
+            html
+    }
+
+
+    request_data = json.dumps(
+        payload
+    ).encode(
+        "utf-8"
+    )
+
+
+    req = urllib.request.Request(
+        "https://api.resend.com/emails",
+
+        data=request_data,
+
+        headers={
+            "Authorization":
+                f"Bearer {api_key}",
+
+            "Content-Type":
+                "application/json",
+
+            "Accept":
+                "application/json"
+        },
+
+        method="POST"
+    )
+
+
+    # =====================================================
+    # SEND
+    # =====================================================
+
+    try:
+
+        with urllib.request.urlopen(
+            req,
+            timeout=15
+        ) as response:
+
+            response_body = (
+                response
+                .read()
+                .decode(
+                    "utf-8"
+                )
+            )
+
+
+        now = (
+            datetime.utcnow()
+            .isoformat()
+        )
+
+
+        c = _db()
+
+
+        try:
+
+            c.execute(
+                """
+                INSERT INTO email_log(
+                    order_id,
+                    recipient,
+                    subject,
+                    body,
+                    created_at,
+                    sent
+                )
+                VALUES(
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    1
+                )
+                """,
+                (
+                    order["id"],
+                    recipient,
+                    subject,
+                    html,
+                    now
+                )
+            )
+
+
+            c.execute(
+                """
+                UPDATE orders
+                SET family_tracking_sent_at=?
+                WHERE id=?
+                """,
+                (
+                    now,
+                    order["id"]
+                )
+            )
+
+
+            c.commit()
+
+
+        finally:
+
+            c.close()
+
+
+        return (
+            True,
+            response_body
+        )
+
+
+    except Exception as exc:
+
+        # =================================================
+        # LOG FAILED EMAIL
+        # =================================================
+
+        try:
+
+            c = _db()
+
+            try:
+
+                c.execute(
+                    """
+                    INSERT INTO email_log(
+                        order_id,
+                        recipient,
+                        subject,
+                        body,
+                        created_at,
+                        sent
+                    )
+                    VALUES(
+                        ?,
+                        ?,
+                        ?,
+                        ?,
+                        ?,
+                        0
+                    )
+                    """,
+                    (
+                        order["id"],
+                        recipient,
+                        subject,
+                        html,
+                        datetime.utcnow()
+                        .isoformat()
+                    )
+                )
+
+
+                c.commit()
+
+            finally:
+
+                c.close()
+
+
+        except Exception:
+            pass
+
+
+        return (
+            False,
+            str(exc)
+        )
