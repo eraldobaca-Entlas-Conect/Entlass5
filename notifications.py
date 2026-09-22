@@ -1,3 +1,5 @@
+"""ENTLASS-CONNECT family email notifications via Resend."""
+
 import json
 import os
 import urllib.request
@@ -10,15 +12,7 @@ from core import db
 
 
 def send_family_tracking_email(order, driver_name=""):
-    """
-    Sends one tracking email to the family via Resend.
-
-    WhatsApp: NO
-    SMS: NO
-    Share button: NO
-
-    A failed email never blocks the driver acceptance.
-    """
+    """Send the family tracking email once via Resend."""
 
     recipient = (order["family_email"] or "").strip()
 
@@ -34,10 +28,6 @@ def send_family_tracking_email(order, driver_name=""):
 
     if not api_key or not from_email:
         return False, "Resend configuration missing."
-
-    # ---------------------------------------------------------
-    # CHECK IF ALREADY SENT
-    # ---------------------------------------------------------
 
     c = db()
 
@@ -57,10 +47,6 @@ def send_family_tracking_email(order, driver_name=""):
         return True, "Bereits gesendet."
 
     c.close()
-
-    # ---------------------------------------------------------
-    # TRACKING URL
-    # ---------------------------------------------------------
 
     base_url = (
         os.getenv(
@@ -88,19 +74,15 @@ def send_family_tracking_email(order, driver_name=""):
             _external=True
         )
 
-    # ---------------------------------------------------------
-    # SAFE VALUES
-    # ---------------------------------------------------------
-
-    order_no = escape(
+    safe_order_no = escape(
         order["order_no"] or ""
     )
 
-    driver = escape(
+    safe_driver = escape(
         driver_name or "zugewiesener Fahrer"
     )
 
-    tracking_url_safe = escape(
+    safe_tracking_url = escape(
         tracking_url,
         quote=True
     )
@@ -109,10 +91,6 @@ def send_family_tracking_email(order, driver_name=""):
         "ENTLASS-CONNECT – "
         f"Transport {order['order_no']} angenommen"
     )
-
-    # ---------------------------------------------------------
-    # EMAIL HTML
-    # ---------------------------------------------------------
 
     html = f"""
 <!doctype html>
@@ -138,9 +116,13 @@ def send_family_tracking_email(order, driver_name=""):
     background:#ffffff;
     border-radius:12px;
     padding:30px;
+    box-sizing:border-box;
 ">
 
-<h2 style="color:#17324d;">
+<h2 style="
+    margin-top:0;
+    color:#17324d;
+">
     ENTLASS-CONNECT
 </h2>
 
@@ -150,18 +132,19 @@ def send_family_tracking_email(order, driver_name=""):
 
 <div style="
     background:#eef7f4;
-    padding:16px;
     border-radius:8px;
+    padding:16px;
+    margin:20px 0;
 ">
 
-<p>
+<p style="margin:5px 0;">
 <strong>Auftrag:</strong>
-{order_no}
+{safe_order_no}
 </p>
 
-<p>
+<p style="margin:5px 0;">
 <strong>Fahrer:</strong>
-{driver}
+{safe_driver}
 </p>
 
 </div>
@@ -173,16 +156,18 @@ aktuellen Transportstatus abrufen:
 
 <p style="margin:25px 0;">
 
-<a href="{tracking_url_safe}"
-   style="
-       display:inline-block;
-       padding:13px 20px;
-       background:#2e9a8b;
-       color:#ffffff;
-       text-decoration:none;
-       border-radius:8px;
-       font-weight:bold;
-   ">
+<a
+    href="{safe_tracking_url}"
+    style="
+        display:inline-block;
+        padding:13px 20px;
+        background:#2e9a8b;
+        color:#ffffff;
+        text-decoration:none;
+        border-radius:8px;
+        font-weight:bold;
+    "
+>
     Transport verfolgen
 </a>
 
@@ -202,10 +187,6 @@ Transportverfolgung erforderlichen Informationen.
 </html>
 """
 
-    # ---------------------------------------------------------
-    # RESEND
-    # ---------------------------------------------------------
-
     payload = {
         "from": (
             f"{from_name} <{from_email}>"
@@ -219,16 +200,13 @@ Transportverfolgung erforderlichen Informationen.
 
     req = urllib.request.Request(
         "https://api.resend.com/emails",
-        data=json.dumps(payload).encode("utf-8"),
+        data=json.dumps(
+            payload
+        ).encode("utf-8"),
         headers={
-            "Authorization":
-                f"Bearer {api_key}",
-
-            "Content-Type":
-                "application/json",
-
-            "Accept":
-                "application/json",
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+            "Accept": "application/json",
         },
         method="POST",
     )
@@ -289,8 +267,6 @@ Transportverfolgung erforderlichen Informationen.
         return True, response_body
 
     except Exception as exc:
-
-        # Email failure must NOT block the order.
 
         try:
 
