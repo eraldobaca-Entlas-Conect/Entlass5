@@ -2518,6 +2518,34 @@ def new_order():
     )
 
 
+    # PostgreSQL safety fallback: if the wrapper could not expose
+    # the generated ID, resolve it from the unique tracking token.
+    if not order_id:
+
+        inserted_order = c.execute(
+            """
+            SELECT id
+            FROM orders
+            WHERE tracking_token=?
+            """,
+            (
+                tracking_token,
+            )
+        ).fetchone()
+
+        if inserted_order:
+            order_id = inserted_order["id"]
+
+
+    if not order_id:
+
+        c.close()
+
+        raise RuntimeError(
+            "Auftrag wurde erstellt, aber die Auftrags-ID konnte nicht ermittelt werden."
+        )
+
+
     # =====================================================
     # EVENT
     # =====================================================
