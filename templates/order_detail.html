@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block content %}
+<main class="page narrow">
+  <div class="titlebar">
+    <div>
+      <span class="eyebrow">ENTLASS-CONNECT · AUFTRAG</span>
+      <h1>{{ order.order_no }}</h1>
+      <p>{{ order.status }} · {{ order.pickup }} → {{ order.destination }}</p>
+    </div>
+    <a class="button secondary" href="{{ url_for('dashboard') if session_role != 'driver' else url_for('driver') }}">← Zurück</a>
+  </div>
+
+  <section class="card">
+    <div class="sectionhead"><h2>Auftragsdaten</h2><span class="tag">{{ order.status }}</span></div>
+    <div class="grid2">
+      <div><b>Patient / Fallnummer</b><p>{{ order.patient_ref or '—' }}</p></div>
+      <div><b>Name</b><p>{{ order.patient_name or '—' }}</p></div>
+      <div><b>Abholung</b><p>{{ order.pickup }}</p></div>
+      <div><b>Ziel</b><p>{{ order.destination }}</p></div>
+      <div><b>Transport</b><p>{{ order.transport_type|capitalize }}</p></div>
+      <div><b>Termin</b><p>{{ order.date }} · {{ order.pickup_time }}</p></div>
+      <div><b>Kostenträger</b><p>{{ order.payer or '—' }}</p></div>
+      <div><b>Angehörige E-Mail</b><p>{{ order.family_email or '—' }}</p></div>
+      <div><b>Fahrer</b><p>{{ order.driver_name or 'Noch nicht zugewiesen' }}</p></div>
+      <div><b>Tracking</b><p>{% if order.tracking_token %}<a href="{{ url_for('track', token=order.tracking_token) }}" target="_blank">Tracking öffnen</a>{% else %}—{% endif %}</p></div>
+    </div>
+  </section>
+
+  {% if session_role in ['admin','dispatcher','hospital'] and order.status in ['NEW','OFFERED'] %}
+  <section class="card">
+    <div class="sectionhead"><h2>Disposition</h2><span class="tag">Fahrer zuweisen</span></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <a class="button" href="{{ url_for('dispatch', order_id=order.id) }}">Fahrer disponieren</a>
+      {% if order.status == 'NEW' %}
+      <form method="post" action="{{ url_for('offer_order', order_id=order.id) }}"><button class="button secondary" type="submit">Auftrag anbieten</button></form>
+      {% endif %}
+    </div>
+  </section>
+  {% endif %}
+
+  <section class="card">
+    <div class="sectionhead"><h2>Verlauf</h2><span class="tag">{{ events|length }} Ereignisse</span></div>
+    {% for e in events %}
+      <div class="offer"><div><b>{{ e.status }}</b><p>{{ e.note or '' }}</p></div><small>{{ e.created_at }}</small></div>
+    {% else %}<p class="empty">Noch keine Ereignisse.</p>{% endfor %}
+  </section>
+</main>
+{% endblock %}
