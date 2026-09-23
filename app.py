@@ -3081,13 +3081,47 @@ def driver_status(
             "order_detail",
             order_id=order_id
         )
-                (
+    )
+
+
+# =========================================================
+# DRIVER AVAILABILITY / SHIFT
+# =========================================================
+
+@app.post(
+    "/driver/availability"
+)
+@login_required([
+    "driver"
+])
+def driver_availability():
+
+    val = (
+        request.form.get(
+            "available"
+        )
+        or "0"
+    ).strip() == "1"
+
+    now = datetime.utcnow().isoformat()
+
+    c = db()
+
+    d = c.execute(
+        """
+        SELECT *
+        FROM drivers
+        WHERE user_id=?
+        """,
+        (
             session["user_id"],
         )
     ).fetchone()
 
-
     if not d:
+
+        c.close()
+
         abort(404)
 
 
