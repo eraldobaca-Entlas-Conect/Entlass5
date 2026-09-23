@@ -3964,3 +3964,16 @@ def health():
         "status": "ok",
         "app": "ENTLASS-CONNECT"
     }
+
+
+# =========================================================
+# DATABASE STARTUP INITIALIZATION / MIGRATIONS
+# =========================================================
+# Run migrations when Gunicorn imports app.py. This is required
+# for existing PostgreSQL databases created before newer columns
+# (e.g. family_email) were added.
+try:
+    init_db()
+except Exception as exc:
+    print(f"DATABASE INITIALIZATION FAILED: {exc}")
+    raise
