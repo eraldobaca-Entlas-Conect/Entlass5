@@ -2262,62 +2262,59 @@ def dashboard():
 
     c = db()
 
-
     stats = {}
-
-
     for status in STATUS:
-
         row = c.execute(
-            """
-            SELECT COUNT(*) AS n
-            FROM orders
-            WHERE status=?
-            """,
-            (
-                status,
-            )
+            """SELECT COUNT(*) AS n FROM orders WHERE status=?""",
+            (status,)
         ).fetchone()
+        stats[status] = row["n"] if row else 0
 
-
-        stats[status] = (
-            row["n"]
-            if row
-            else 0
+    stats["today"] = c.execute(
+        """SELECT COUNT(*) AS n FROM orders WHERE date=?""",
+        (datetime.now().strftime("%Y-%m-%d"),)
+    ).fetchone()["n"]
+    stats["open"] = sum(
+        stats.get(x, 0) for x in (
+            "NEW", "OFFERED", "ACCEPTED", "TO_PICKUP",
+            "PICKED_UP", "TO_DESTINATION", "ARRIVED"
         )
-
+    )
+    stats["available"] = c.execute(
+        """SELECT COUNT(*) AS n FROM drivers WHERE available=1"""
+    ).fetchone()["n"]
+    stats["completed"] = stats.get("COMPLETED", 0)
 
     recent = c.execute(
-        """
-        SELECT
-            o.*,
-            d.name driver_name
-        FROM orders o
-        LEFT JOIN drivers d
-            ON d.id=o.driver_id
-        ORDER BY o.id DESC
-        LIMIT 100
-        """
+        """SELECT o.*, d.name driver_name
+           FROM orders o LEFT JOIN drivers d ON d.id=o.driver_id
+           ORDER BY o.id DESC LIMIT 100"""
     ).fetchall()
-
 
     drivers = c.execute(
-        """
-        SELECT *
-        FROM drivers
-        ORDER BY name
-        """
+        """SELECT * FROM drivers ORDER BY name"""
     ).fetchall()
 
+    alerts = c.execute(
+        """SELECT o.id,o.order_no,o.status,o.pickup,o.destination,o.transport_type
+           FROM orders o
+           WHERE o.status IN ('PROBLEM','NEW')
+           ORDER BY o.id DESC LIMIT 50"""
+    ).fetchall()
+
+    invoices = c.execute(
+        """SELECT * FROM invoices ORDER BY id DESC LIMIT 50"""
+    ).fetchall()
 
     c.close()
-
 
     return render_template(
         "dashboard.html",
         stats=stats,
         orders=recent,
-        drivers=drivers
+        drivers=drivers,
+        alerts=alerts,
+        invoices=invoices
     )
 
 
@@ -2342,7 +2339,8 @@ def new_order():
     if request.method == "GET":
 
         return render_template(
-            "new_order.html"
+            "new_order.html",
+            today=datetime.now().strftime("%Y-%m-%d")
         )
 
 
@@ -2735,6 +2733,98 @@ def offer_order(
 
 
 # =========================================================
+# DISPATCH
+# =========================================================
+
+@app.get("/orders/<int:order_id>/dispatch")
+@login_required(["admin", "dispatcher", "hospital"])
+def dispatch(order_id):
+    c = db()
+    order = c.execute(
+        """SELECT * FROM orders WHERE id=?""", (order_id,)
+    ).fetchone()
+    if not order:
+        c.close()
+        abort(404)
+
+    drivers = c.execute(
+        """SELECT * FROM drivers WHERE available=1 ORDER BY name"""
+    ).fetchall()
+    ranked = []
+    for d in drivers:
+        if not capability_ok(d["capability"], order["transport_type"]):
+            continue
+        dist = distance_km(
+            d["lat"], d["lng"], 50.1109, 8.6821
+        )
+        score = max(0, min(100, round(65 + (35 * max(0, 1 - min(dist, 20) / 20)))))
+        ranked.append((score, round(dist, 1), d))
+    ranked.sort(key=lambda x: (-x[0], x[1], x[2]["name"]))
+    c.close()
+    return render_template("dispatch.html", order=order, ranked=ranked)
+
+
+def _dispatch_order(order_id, requested_driver_id=None):
+    c = db()
+    order = c.execute("SELECT * FROM orders WHERE id=?", (order_id,)).fetchone()
+    if not order:
+        c.close()
+        return {"error": "Auftrag nicht gefunden."}, 404
+    if order["status"] not in ("NEW", "OFFERED"):
+        c.close()
+        return {"error": "Auftrag ist nicht mehr disponierbar."}, 409
+
+    if requested_driver_id:
+        drivers = c.execute(
+            """SELECT * FROM drivers WHERE id=? AND available=1""",
+            (requested_driver_id,)
+        ).fetchall()
+    else:
+        drivers = c.execute(
+            """SELECT * FROM drivers WHERE available=1 ORDER BY name"""
+        ).fetchall()
+
+    candidates = [d for d in drivers if capability_ok(d["capability"], order["transport_type"])]
+    if not candidates:
+        c.close()
+        return {"error": "Kein passender Fahrer verfügbar."}, 409
+
+    if requested_driver_id:
+        d = candidates[0]
+    else:
+        d = min(
+            candidates,
+            key=lambda x: distance_km(x["lat"], x["lng"], 50.1109, 8.6821)
+        )
+
+    now = datetime.utcnow().isoformat()
+    c.execute(
+        """UPDATE orders SET status='OFFERED', driver_id=? WHERE id=?""",
+        (d["id"], order_id)
+    )
+    c.execute(
+        """INSERT INTO events(order_id,status,note,created_at) VALUES(?,?,?,?)""",
+        (order_id, "OFFERED", f"Angebot an {d['name']}", now)
+    )
+    c.commit()
+    c.close()
+    return {"ok": True, "driver": d["name"]}, 200
+
+
+@app.post("/api/dispatch/<int:order_id>")
+@login_required(["admin", "dispatcher", "hospital"])
+def api_dispatch(order_id):
+    payload = request.get_json(silent=True) or {}
+    driver_id = payload.get("driver_id")
+    try:
+        driver_id = int(driver_id) if driver_id is not None else None
+    except (TypeError, ValueError):
+        return jsonify(error="Ungültige Fahrer-ID."), 400
+    result, code = _dispatch_order(order_id, driver_id)
+    return jsonify(result), code
+
+
+# =========================================================
 # DRIVER
 # =========================================================
 
@@ -2859,6 +2949,8 @@ def driver_accept(
     if (
         not d
         or not o
+        or o["status"] != "OFFERED"
+        or (o["driver_id"] is not None and o["driver_id"] != d["id"])
         or not capability_ok(
             d["capability"],
             o["transport_type"]
