@@ -4310,6 +4310,15 @@ def invoice(order_id):
         c.close()
 
 
+    # ---------------------------------------------------------
+    # INVOICE FILE RECOVERY
+    # ---------------------------------------------------------
+    # Render uses an ephemeral filesystem. After a restart/redeploy,
+    # the database record can still contain the old PDF path while
+    # the physical PDF file is gone. In that case regenerate it
+    # automatically instead of returning HTTP 500.
+    # ---------------------------------------------------------
+
     c = db()
 
 
@@ -4330,9 +4339,95 @@ def invoice(order_id):
     c.close()
 
 
-    if not inv:
+    pdf_missing = (
+        not inv
+        or not inv["pdf_path"]
+        or not os.path.isfile(inv["pdf_path"])
+    )
 
-        abort(404)
+
+    if pdf_missing:
+
+        # Reload the current order before rebuilding the PDF.
+        c = db()
+
+        current_order = c.execute(
+            """
+            SELECT *
+            FROM orders
+            WHERE id=?
+            """,
+            (
+                order_id,
+            )
+        ).fetchone()
+
+        c.close()
+
+
+        if not current_order:
+
+            abort(404)
+
+
+        try:
+
+            make_invoice(
+                current_order
+            )
+
+        except Exception as exc:
+
+            app.logger.exception(
+                "Invoice regeneration failed for order %s",
+                order_id
+            )
+
+            return (
+                jsonify(
+                    error=(
+                        "Rechnung konnte nicht erstellt werden: "
+                        f"{exc}"
+                    )
+                ),
+                500
+            )
+
+
+        # Read the newly generated invoice record.
+        c = db()
+
+        inv = c.execute(
+            """
+            SELECT *
+            FROM invoices
+            WHERE order_id=?
+            ORDER BY id DESC
+            LIMIT 1
+            """,
+            (
+                order_id,
+            )
+        ).fetchone()
+
+        c.close()
+
+
+    if (
+        not inv
+        or not inv["pdf_path"]
+        or not os.path.isfile(inv["pdf_path"])
+    ):
+
+        return (
+            jsonify(
+                error=(
+                    "Die Rechnungs-PDF konnte nicht "
+                    "bereitgestellt werden."
+                )
+            ),
+            500
+        )
 
 
     return send_file(
