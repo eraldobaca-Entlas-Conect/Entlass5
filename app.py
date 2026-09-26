@@ -133,6 +133,184 @@ NEXT_STATUS = {
 
 
 # =========================================================
+# OFFER TIMEOUT
+# =========================================================
+
+OFFER_TIMEOUT_MINUTES = 3
+
+
+def _utc_now():
+    return datetime.utcnow()
+
+
+def _utc_now_iso():
+    return _utc_now().isoformat()
+
+
+def _parse_datetime(value):
+    if not value:
+        return None
+
+    try:
+        return datetime.fromisoformat(
+            str(value).replace("Z", "")
+        )
+    except Exception:
+        return None
+
+
+def _expire_stale_offers(c):
+    """
+    Expires driver offers after 3 minutes.
+
+    If another suitable available driver exists, the order is
+    immediately offered to that driver. Otherwise the order is
+    returned to NEW so it can be dispatched again.
+    """
+
+    now = _utc_now()
+    cutoff = now - timedelta(minutes=OFFER_TIMEOUT_MINUTES)
+
+    stale = c.execute(
+        """
+        SELECT *
+        FROM orders
+        WHERE status='OFFERED'
+        AND offer_started_at IS NOT NULL
+        """
+    ).fetchall()
+
+    for order in stale:
+        started = _parse_datetime(order["offer_started_at"])
+
+        if not started or started > cutoff:
+            continue
+
+        previous_driver_id = order["driver_id"]
+
+        candidates = c.execute(
+            """
+            SELECT *
+            FROM drivers
+            WHERE available=1
+            ORDER BY name
+            """
+        ).fetchall()
+
+        candidates = [
+            d for d in candidates
+            if d["id"] != previous_driver_id
+            and capability_ok(
+                d["capability"],
+                order["transport_type"]
+            )
+        ]
+
+        if candidates:
+            d = min(
+                candidates,
+                key=lambda x: distance_km(
+                    x["lat"],
+                    x["lng"],
+                    50.1109,
+                    8.6821
+                )
+            )
+
+            round_no = int(order["offer_round"] or 0) + 1
+            new_time = _utc_now_iso()
+
+            c.execute(
+                """
+                UPDATE orders
+                SET
+                    status='OFFERED',
+                    driver_id=?,
+                    offer_started_at=?,
+                    offer_round=?
+                WHERE id=?
+                AND status='OFFERED'
+                """,
+                (
+                    d["id"],
+                    new_time,
+                    round_no,
+                    order["id"]
+                )
+            )
+
+            c.execute(
+                """
+                UPDATE drivers
+                SET last_offer_at=?
+                WHERE id=?
+                """,
+                (
+                    new_time,
+                    d["id"]
+                )
+            )
+
+            c.execute(
+                """
+                INSERT INTO events(
+                    order_id,
+                    status,
+                    note,
+                    created_at
+                )
+                VALUES(?,?,?,?)
+                """,
+                (
+                    order["id"],
+                    "OFFERED",
+                    (
+                        "3-Minuten-Angebot abgelaufen. "
+                        f"Neues Angebot an {d['name']}."
+                    ),
+                    new_time
+                )
+            )
+
+        else:
+            c.execute(
+                """
+                UPDATE orders
+                SET
+                    status='NEW',
+                    driver_id=NULL,
+                    offer_started_at=NULL
+                WHERE id=?
+                AND status='OFFERED'
+                """,
+                (
+                    order["id"],
+                )
+            )
+
+            c.execute(
+                """
+                INSERT INTO events(
+                    order_id,
+                    status,
+                    note,
+                    created_at
+                )
+                VALUES(?,?,?,?)
+                """,
+                (
+                    order["id"],
+                    "OFFER_EXPIRED",
+                    (
+                        "3-Minuten-Angebot abgelaufen. "
+                        "Kein weiterer passender Fahrer verfügbar."
+                    ),
+                    _utc_now_iso()
+                )
+            )
+
+
+# =========================================================
 # DATABASE WRAPPER
 # =========================================================
 
@@ -596,6 +774,16 @@ def init_db():
         (
             "family_tracking_sent_at",
             "TEXT"
+        ),
+
+        (
+            "offer_started_at",
+            "TEXT"
+        ),
+
+        (
+            "offer_round",
+            "INTEGER DEFAULT 0"
         ),
 
     ]
@@ -2688,14 +2876,25 @@ def offer_order(
         abort(404)
 
 
+    now = _utc_now_iso()
+
+    current_round = int(
+        order["offer_round"] or 0
+    ) + 1
+
     c.execute(
         """
         UPDATE orders
-        SET status='OFFERED'
+        SET
+            status='OFFERED',
+            offer_started_at=?,
+            offer_round=?
         WHERE id=?
         """,
         (
-            order_id,
+            now,
+            current_round,
+            order_id
         )
     )
 
@@ -2713,9 +2912,8 @@ def offer_order(
         (
             order_id,
             "OFFERED",
-            "Auftrag an Fahrer angeboten",
-            datetime.utcnow()
-            .isoformat()
+            "Auftrag an Fahrer angeboten – 3-Minuten-Angebot gestartet.",
+            now
         )
     )
 
@@ -2766,49 +2964,135 @@ def dispatch(order_id):
 
 def _dispatch_order(order_id, requested_driver_id=None):
     c = db()
-    order = c.execute("SELECT * FROM orders WHERE id=?", (order_id,)).fetchone()
+
+    # First release offers that have already expired.
+    _expire_stale_offers(c)
+
+    order = c.execute(
+        "SELECT * FROM orders WHERE id=?",
+        (order_id,)
+    ).fetchone()
+
     if not order:
         c.close()
         return {"error": "Auftrag nicht gefunden."}, 404
+
     if order["status"] not in ("NEW", "OFFERED"):
         c.close()
-        return {"error": "Auftrag ist nicht mehr disponierbar."}, 409
+        return {
+            "error": "Auftrag ist nicht mehr disponierbar."
+        }, 409
 
     if requested_driver_id:
         drivers = c.execute(
-            """SELECT * FROM drivers WHERE id=? AND available=1""",
+            """
+            SELECT *
+            FROM drivers
+            WHERE id=?
+            AND available=1
+            """,
             (requested_driver_id,)
         ).fetchall()
     else:
         drivers = c.execute(
-            """SELECT * FROM drivers WHERE available=1 ORDER BY name"""
+            """
+            SELECT *
+            FROM drivers
+            WHERE available=1
+            ORDER BY name
+            """
         ).fetchall()
 
-    candidates = [d for d in drivers if capability_ok(d["capability"], order["transport_type"])]
+    candidates = [
+        d for d in drivers
+        if capability_ok(
+            d["capability"],
+            order["transport_type"]
+        )
+    ]
+
     if not candidates:
         c.close()
-        return {"error": "Kein passender Fahrer verfügbar."}, 409
+        return {
+            "error": "Kein passender Fahrer verfügbar."
+        }, 409
 
     if requested_driver_id:
         d = candidates[0]
     else:
         d = min(
             candidates,
-            key=lambda x: distance_km(x["lat"], x["lng"], 50.1109, 8.6821)
+            key=lambda x: distance_km(
+                x["lat"],
+                x["lng"],
+                50.1109,
+                8.6821
+            )
         )
 
-    now = datetime.utcnow().isoformat()
+    now = _utc_now_iso()
+    round_no = int(order["offer_round"] or 0) + 1
+
     c.execute(
-        """UPDATE orders SET status='OFFERED', driver_id=? WHERE id=?""",
-        (d["id"], order_id)
+        """
+        UPDATE orders
+        SET
+            status='OFFERED',
+            driver_id=?,
+            offer_started_at=?,
+            offer_round=?
+        WHERE id=?
+        """,
+        (
+            d["id"],
+            now,
+            round_no,
+            order_id
+        )
     )
+
     c.execute(
-        """INSERT INTO events(order_id,status,note,created_at) VALUES(?,?,?,?)""",
-        (order_id, "OFFERED", f"Angebot an {d['name']}", now)
+        """
+        UPDATE drivers
+        SET last_offer_at=?
+        WHERE id=?
+        """,
+        (
+            now,
+            d["id"]
+        )
     )
+
+    c.execute(
+        """
+        INSERT INTO events(
+            order_id,
+            status,
+            note,
+            created_at
+        )
+        VALUES(?,?,?,?)
+        """,
+        (
+            order_id,
+            "OFFERED",
+            (
+                f"3-Minuten-Angebot an {d['name']} "
+                f"(Runde {round_no})"
+            ),
+            now
+        )
+    )
+
     c.commit()
     c.close()
-    return {"ok": True, "driver": d["name"]}, 200
+
+    return {
+        "ok": True,
+        "driver": d["name"],
+        "offer_round": round_no,
+        "offer_timeout_minutes": OFFER_TIMEOUT_MINUTES
+    }, 200
 
 
 @app.post("/api/dispatch/<int:order_id>")
@@ -2860,6 +3144,10 @@ def driver():
         abort(403)
 
 
+    _expire_stale_offers(c)
+
+    # Only the driver to whom an offer was actually assigned
+    # may see and accept that offer.
     orders = c.execute(
         """
         SELECT *
@@ -2872,13 +3160,7 @@ def driver():
             'TO_DESTINATION',
             'ARRIVED'
         )
-        AND (
-            driver_id=?
-            OR (
-                status='OFFERED'
-                AND driver_id IS NULL
-            )
-        )
+        AND driver_id=?
         ORDER BY
             CASE
                 WHEN status='OFFERED'
@@ -2892,14 +3174,40 @@ def driver():
         )
     ).fetchall()
 
+    offers = [
+        o for o in orders
+        if o["status"] == "OFFERED"
+    ]
+
+    active = [
+        o for o in orders
+        if o["status"] != "OFFERED"
+    ]
+
+    today_count = c.execute(
+        """
+        SELECT COUNT(*) AS n
+        FROM orders
+        WHERE driver_id=?
+        AND date=?
+        """,
+        (
+            d["id"],
+            datetime.now().strftime("%Y-%m-%d")
+        )
+    ).fetchone()["n"]
 
     c.close()
-
 
     return render_template(
         "driver.html",
         driver=d,
-        orders=orders
+        orders=orders,
+        offers=offers,
+        active=active,
+        today_count=today_count,
+        next_status=NEXT_STATUS,
+        offer_timeout_minutes=OFFER_TIMEOUT_MINUTES
     )
 
 
@@ -2950,7 +3258,7 @@ def driver_accept(
         not d
         or not o
         or o["status"] != "OFFERED"
-        or (o["driver_id"] is not None and o["driver_id"] != d["id"])
+        or o["driver_id"] != d["id"]
         or not capability_ok(
             d["capability"],
             o["transport_type"]
@@ -2968,7 +3276,8 @@ def driver_accept(
         SET
             driver_id=?,
             status='ACCEPTED',
-            accepted_at=?
+            accepted_at=?,
+            offer_started_at=NULL
         WHERE id=?
         """,
         (
@@ -3123,6 +3432,18 @@ def driver_status(
         c.close()
 
         abort(403)
+
+
+    expected_status = NEXT_STATUS.get(
+        order["status"]
+    )
+
+    if (
+        expected_status is None
+        or new_status != expected_status
+    ):
+        c.close()
+        abort(400)
 
 
     c.execute(
@@ -3546,6 +3867,7 @@ def alerts():
 
     c = db()
 
+    _expire_stale_offers(c)
 
     rows = c.execute(
         """
@@ -3560,13 +3882,6 @@ def alerts():
         WHERE o.status IN(
             'PROBLEM',
             'NEW'
-        )
-        OR (
-            o.status='OFFERED'
-            AND o.created_at <= (
-                CURRENT_TIMESTAMP
-                - INTERVAL '5 minutes'
-            )
         )
         ORDER BY o.id DESC
         """
