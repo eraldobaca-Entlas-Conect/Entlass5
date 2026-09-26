@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#123b58">
+    <title>Neuer Auftrag – ENTLASS-CONNECT</title>
+    <style>
+        :root {
+            --navy: #123b58;
+            --teal: #2e9a8b;
+            --teal-dark: #23796d;
+            --bg: #f4f7f8;
+            --card: #ffffff;
+            --line: #dbe5e8;
+            --text: #173042;
+            --muted: #667984;
+            --danger: #c62828;
+            --shadow: 0 8px 24px rgba(18,59,88,.08);
+        }
+
+        * { box-sizing: border-box; }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            min-height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        body { padding-bottom: 24px; }
+
+        .topbar {
+            background: linear-gradient(135deg, var(--navy), #1c5878);
+            color: #fff;
+            padding: 14px 18px;
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            box-shadow: 0 3px 14px rgba(0,0,0,.12);
+        }
+
+        .topbar-inner {
+            max-width: 1100px;
+            margin: auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+        }
+
+        .brand-mark {
+            width: 38px;
+            height: 38px;
+            border-radius: 11px;
+            background: #fff;
+            display: grid;
+            place-items: center;
+            overflow: hidden;
+            flex: 0 0 auto;
+        }
+
+        .brand-mark img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .brand-text {
+            font-weight: 800;
+            letter-spacing: .2px;
+            line-height: 1.05;
+        }
+
+        .brand-text span { color: #7ee1d3; }
+
+        .logout {
+            background: #c62828;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 9px;
+            padding: 9px 13px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .page {
+            width: min(1100px, calc(100% - 24px));
+            margin: 18px auto;
+        }
+
+        .heading {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: clamp(22px, 3vw, 30px);
+            color: var(--navy);
+        }
+
+        .back {
+            color: var(--navy);
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            padding: 18px;
+        }
+
+        .section {
+            margin-bottom: 18px;
+        }
+
+        .section:last-child { margin-bottom: 0; }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--navy);
+            font-size: 15px;
+            font-weight: 800;
+            margin: 0 0 11px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .field {
+            min-width: 0;
+        }
+
+        .field.full {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 700;
+            margin: 0 0 5px;
+            color: #304c5d;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            border: 1px solid #cbd9de;
+            border-radius: 10px;
+            background: #fff;
+            color: var(--text);
+            font: inherit;
+            padding: 11px 12px;
+            outline: none;
+            transition: border-color .15s, box-shadow .15s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--teal);
+            box-shadow: 0 0 0 3px rgba(46,154,139,.13);
+        }
+
+        textarea {
+            min-height: 86px;
+            resize: vertical;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 18px;
+            padding-top: 15px;
+            border-top: 1px solid var(--line);
+        }
+
+        .btn {
+            border: 0;
+            border-radius: 10px;
+            padding: 12px 18px;
+            font: inherit;
+            font-weight: 800;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .btn-secondary {
+            background: #edf2f4;
+            color: var(--navy);
+        }
+
+        .btn-primary {
+            background: var(--teal);
+            color: #fff;
+            min-width: 180px;
+        }
+
+        .btn-primary:hover { background: var(--teal-dark); }
+
+        .required { color: var(--danger); }
+
+        .hint {
+            margin-top: 4px;
+            color: var(--muted);
+            font-size: 11px;
+        }
+
+        @media (max-width: 700px) {
+            .topbar { padding: 10px 12px; }
+            .page {
+                width: calc(100% - 16px);
+                margin: 10px auto;
+            }
+            .card {
+                padding: 13px;
+                border-radius: 13px;
+            }
+            .grid { grid-template-columns: 1fr; gap: 10px; }
+            .field.full { grid-column: auto; }
+            .heading { margin-bottom: 10px; }
+            .heading h1 { font-size: 22px; }
+            .logout { padding: 8px 10px; font-size: 13px; }
+            .brand-mark { width: 34px; height: 34px; }
+            .brand-text { font-size: 14px; }
+            input, select, textarea { padding: 10px; }
+            .actions {
+                position: sticky;
+                bottom: 0;
+                background: rgba(255,255,255,.96);
+                margin-left: -13px;
+                margin-right: -13px;
+                margin-bottom: -13px;
+                padding: 11px 13px;
+                z-index: 10;
+            }
+            .actions .btn { flex: 1; }
+        }
+
+        @media (max-width: 390px) {
+            .actions { flex-direction: column; }
+            .actions .btn { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="topbar">
+    <div class="topbar-inner">
+        <div class="brand">
+            <div class="brand-mark">
+                <img src="{{ url_for('static', filename='img/logo.jpeg') }}"
+                     alt="ENTLASS-CONNECT"
+                     onerror="this.style.display='none'">
+            </div>
+            <div class="brand-text">
+                ENTLASS <span>CONNECT</span>
+            </div>
+        </div>
+
+        <a class="logout" href="{{ url_for('logout') }}">ABMELDEN</a>
+    </div>
+</header>
+
+<main class="page">
+    <div class="heading">
+        <h1>Neuer Auftrag</h1>
+        <a class="back" href="{{ url_for('dashboard') }}">← Dashboard</a>
+    </div>
+
+    <form class="card" method="POST" action="{{ url_for('new_order') }}">
+
+        <section class="section">
+            <h2 class="section-title">👤 Patient</h2>
+
+            <div class="grid">
+                <div class="field">
+                    <label for="patient_name">Patient <span class="required">*</span></label>
+                    <input id="patient_name" name="patient_name" type="text"
+                           autocomplete="name" required>
+                </div>
+
+                <div class="field">
+                    <label for="patient_ref">Fallnummer / Referenz</label>
+                    <input id="patient_ref" name="patient_ref" type="text">
+                </div>
+
+                <div class="field">
+                    <label for="insurance_no">Versicherungs-Nr.</label>
+                    <input id="insurance_no" name="insurance_no" type="text">
+                </div>
+
+                <div class="field">
+                    <label for="payer">Kostenträger / Krankenkasse</label>
+                    <input id="payer" name="payer" type="text">
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">🚑 Transport</h2>
+
+            <div class="grid">
+                <div class="field">
+                    <label for="transport_type">Transportart <span class="required">*</span></label>
+                    <select id="transport_type" name="transport_type" required>
+                        <option value="sitzend">Sitzend</option>
+                        <option value="rollstuhl">Rollstuhl</option>
+                        <option value="liege">Liegend</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label for="direction">Fahrtrichtung</label>
+                    <select id="direction" name="direction">
+                        <option value="hinfahrt">Hinfahrt</option>
+                        <option value="rueckfahrt">Rückfahrt</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label for="pickup">Abholort <span class="required">*</span></label>
+                    <input id="pickup" name="pickup" type="text" required>
+                </div>
+
+                <div class="field">
+                    <label for="destination">Ziel <span class="required">*</span></label>
+                    <input id="destination" name="destination" type="text" required>
+                </div>
+
+                <div class="field">
+                    <label for="treatment_facility">Behandlungseinrichtung</label>
+                    <input id="treatment_facility" name="treatment_facility" type="text">
+                </div>
+
+                <div class="field">
+                    <label for="distance_km">Entfernung (km)</label>
+                    <input id="distance_km" name="distance_km" type="number"
+                           min="0" step="0.1" value="12.4">
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">📅 Fahrt</h2>
+
+            <div class="grid">
+                <div class="field">
+                    <label for="date">Datum <span class="required">*</span></label>
+                    <input id="date" name="date" type="date"
+                           value="{{ today }}" required>
+                </div>
+
+                <div class="field">
+                    <label for="pickup_time">Abholzeit <span class="required">*</span></label>
+                    <input id="pickup_time" name="pickup_time" type="time" required>
+                </div>
+
+                <div class="field">
+                    <label for="approval">Genehmigung</label>
+                    <input id="approval" name="approval" type="text">
+                </div>
+
+                <div class="field">
+                    <label for="reason">Grund</label>
+                    <input id="reason" name="reason" type="text">
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">📧 Benachrichtigung</h2>
+
+            <div class="grid">
+                <div class="field full">
+                    <label for="family_email">E-Mail Angehörige</label>
+                    <input id="family_email" name="family_email" type="email"
+                           autocomplete="email"
+                           placeholder="z. B. angehoerige@example.de">
+                    <div class="hint">
+                        Wird für die Familien-/Tracking-Benachrichtigung verwendet.
+                    </div>
+                </div>
+
+                <div class="field full">
+                    <label for="notes">Notizen</label>
+                    <textarea id="notes" name="notes"
+                              placeholder="Zusätzliche Informationen zum Auftrag"></textarea>
+                </div>
+            </div>
+        </section>
+
+        <div class="actions">
+            <a class="btn btn-secondary" href="{{ url_for('dashboard') }}">Abbrechen</a>
+            <button class="btn btn-primary" type="submit">
+                Auftrag erstellen
+            </button>
+        </div>
+
+    </form>
+</main>
+
+</body>
+</html>
