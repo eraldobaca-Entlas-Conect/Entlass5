@@ -131,183 +131,7 @@ NEXT_STATUS = {
     "ARRIVED": "COMPLETED"
 }
 
-
-# =========================================================
-# OFFER TIMEOUT
-# =========================================================
-
 OFFER_TIMEOUT_MINUTES = 3
-
-
-def _utc_now():
-    return datetime.utcnow()
-
-
-def _utc_now_iso():
-    return _utc_now().isoformat()
-
-
-def _parse_datetime(value):
-    if not value:
-        return None
-
-    try:
-        return datetime.fromisoformat(
-            str(value).replace("Z", "")
-        )
-    except Exception:
-        return None
-
-
-def _expire_stale_offers(c):
-    """
-    Expires driver offers after 3 minutes.
-
-    If another suitable available driver exists, the order is
-    immediately offered to that driver. Otherwise the order is
-    returned to NEW so it can be dispatched again.
-    """
-
-    now = _utc_now()
-    cutoff = now - timedelta(minutes=OFFER_TIMEOUT_MINUTES)
-
-    stale = c.execute(
-        """
-        SELECT *
-        FROM orders
-        WHERE status='OFFERED'
-        AND offer_started_at IS NOT NULL
-        """
-    ).fetchall()
-
-    for order in stale:
-        started = _parse_datetime(order["offer_started_at"])
-
-        if not started or started > cutoff:
-            continue
-
-        previous_driver_id = order["driver_id"]
-
-        candidates = c.execute(
-            """
-            SELECT *
-            FROM drivers
-            WHERE available=1
-            ORDER BY name
-            """
-        ).fetchall()
-
-        candidates = [
-            d for d in candidates
-            if d["id"] != previous_driver_id
-            and capability_ok(
-                d["capability"],
-                order["transport_type"]
-            )
-        ]
-
-        if candidates:
-            d = min(
-                candidates,
-                key=lambda x: distance_km(
-                    x["lat"],
-                    x["lng"],
-                    50.1109,
-                    8.6821
-                )
-            )
-
-            round_no = int(order["offer_round"] or 0) + 1
-            new_time = _utc_now_iso()
-
-            c.execute(
-                """
-                UPDATE orders
-                SET
-                    status='OFFERED',
-                    driver_id=?,
-                    offer_started_at=?,
-                    offer_round=?
-                WHERE id=?
-                AND status='OFFERED'
-                """,
-                (
-                    d["id"],
-                    new_time,
-                    round_no,
-                    order["id"]
-                )
-            )
-
-            c.execute(
-                """
-                UPDATE drivers
-                SET last_offer_at=?
-                WHERE id=?
-                """,
-                (
-                    new_time,
-                    d["id"]
-                )
-            )
-
-            c.execute(
-                """
-                INSERT INTO events(
-                    order_id,
-                    status,
-                    note,
-                    created_at
-                )
-                VALUES(?,?,?,?)
-                """,
-                (
-                    order["id"],
-                    "OFFERED",
-                    (
-                        "3-Minuten-Angebot abgelaufen. "
-                        f"Neues Angebot an {d['name']}."
-                    ),
-                    new_time
-                )
-            )
-
-        else:
-            c.execute(
-                """
-                UPDATE orders
-                SET
-                    status='NEW',
-                    driver_id=NULL,
-                    offer_started_at=NULL
-                WHERE id=?
-                AND status='OFFERED'
-                """,
-                (
-                    order["id"],
-                )
-            )
-
-            c.execute(
-                """
-                INSERT INTO events(
-                    order_id,
-                    status,
-                    note,
-                    created_at
-                )
-                VALUES(?,?,?,?)
-                """,
-                (
-                    order["id"],
-                    "OFFER_EXPIRED",
-                    (
-                        "3-Minuten-Angebot abgelaufen. "
-                        "Kein weiterer passender Fahrer verfügbar."
-                    ),
-                    _utc_now_iso()
-                )
-            )
 
 
 # =========================================================
@@ -626,7 +450,9 @@ def init_db():
       distance_km REAL DEFAULT 12.4,
       copay_cents INTEGER DEFAULT 0,
       family_email TEXT,
-      family_tracking_sent_at TEXT
+      family_tracking_sent_at TEXT,
+      offer_started_at TEXT,
+      offer_round INTEGER DEFAULT 0
     );
 
     CREATE TABLE IF NOT EXISTS shift_logs(
@@ -775,12 +601,10 @@ def init_db():
             "family_tracking_sent_at",
             "TEXT"
         ),
-
         (
             "offer_started_at",
             "TEXT"
         ),
-
         (
             "offer_round",
             "INTEGER DEFAULT 0"
@@ -2449,6 +2273,7 @@ def logout():
 def dashboard():
 
     c = db()
+    _expire_stale_offers(c)
 
     stats = {}
     for status in STATUS:
@@ -2853,81 +2678,10 @@ def order_detail(
 def offer_order(
     order_id
 ):
-
-    c = db()
-
-
-    order = c.execute(
-        """
-        SELECT *
-        FROM orders
-        WHERE id=?
-        """,
-        (
-            order_id,
-        )
-    ).fetchone()
-
-
-    if not order:
-
-        c.close()
-
-        abort(404)
-
-
-    now = _utc_now_iso()
-
-    current_round = int(
-        order["offer_round"] or 0
-    ) + 1
-
-    c.execute(
-        """
-        UPDATE orders
-        SET
-            status='OFFERED',
-            offer_started_at=?,
-            offer_round=?
-        WHERE id=?
-        """,
-        (
-            now,
-            current_round,
-            order_id
-        )
-    )
-
-
-    c.execute(
-        """
-        INSERT INTO events(
-            order_id,
-            status,
-            note,
-            created_at
-        )
-        VALUES(?,?,?,?)
-        """,
-        (
-            order_id,
-            "OFFERED",
-            "Auftrag an Fahrer angeboten – 3-Minuten-Angebot gestartet.",
-            now
-        )
-    )
-
-
-    c.commit()
-    c.close()
-
-
-    return redirect(
-        url_for(
-            "order_detail",
-            order_id=order_id
-        )
-    )
+    result, code = _dispatch_order(order_id)
+    if code != 200:
+        return jsonify(result), code
+    return redirect(url_for("order_detail", order_id=order_id))
 
 
 # =========================================================
@@ -2964,135 +2718,26 @@ def dispatch(order_id):
 
 def _dispatch_order(order_id, requested_driver_id=None):
     c = db()
-
-    # First release offers that have already expired.
     _expire_stale_offers(c)
-
-    order = c.execute(
-        "SELECT * FROM orders WHERE id=?",
-        (order_id,)
-    ).fetchone()
-
+    order = c.execute("SELECT * FROM orders WHERE id=?", (order_id,)).fetchone()
     if not order:
-        c.close()
-        return {"error": "Auftrag nicht gefunden."}, 404
-
+        c.close(); return {"error": "Auftrag nicht gefunden."}, 404
     if order["status"] not in ("NEW", "OFFERED"):
-        c.close()
-        return {
-            "error": "Auftrag ist nicht mehr disponierbar."
-        }, 409
-
+        c.close(); return {"error": "Auftrag ist nicht mehr disponierbar."}, 409
     if requested_driver_id:
-        drivers = c.execute(
-            """
-            SELECT *
-            FROM drivers
-            WHERE id=?
-            AND available=1
-            """,
-            (requested_driver_id,)
-        ).fetchall()
+        drivers = c.execute("SELECT * FROM drivers WHERE id=? AND available=1", (requested_driver_id,)).fetchall()
     else:
-        drivers = c.execute(
-            """
-            SELECT *
-            FROM drivers
-            WHERE available=1
-            ORDER BY name
-            """
-        ).fetchall()
-
-    candidates = [
-        d for d in drivers
-        if capability_ok(
-            d["capability"],
-            order["transport_type"]
-        )
-    ]
-
+        drivers = c.execute("SELECT * FROM drivers WHERE available=1 ORDER BY name").fetchall()
+    candidates = [d for d in drivers if capability_ok(d["capability"], order["transport_type"])]
     if not candidates:
-        c.close()
-        return {
-            "error": "Kein passender Fahrer verfügbar."
-        }, 409
-
-    if requested_driver_id:
-        d = candidates[0]
-    else:
-        d = min(
-            candidates,
-            key=lambda x: distance_km(
-                x["lat"],
-                x["lng"],
-                50.1109,
-                8.6821
-            )
-        )
-
-    now = _utc_now_iso()
-    round_no = int(order["offer_round"] or 0) + 1
-
-    c.execute(
-        """
-        UPDATE orders
-        SET
-            status='OFFERED',
-            driver_id=?,
-            offer_started_at=?,
-            offer_round=?
-        WHERE id=?
-        """,
-        (
-            d["id"],
-            now,
-            round_no,
-            order_id
-        )
-    )
-
-    c.execute(
-        """
-        UPDATE drivers
-        SET last_offer_at=?
-        WHERE id=?
-        """,
-        (
-            now,
-            d["id"]
-        )
-    )
-
-    c.execute(
-        """
-        INSERT INTO events(
-            order_id,
-            status,
-            note,
-            created_at
-        )
-        VALUES(?,?,?,?)
-        """,
-        (
-            order_id,
-            "OFFERED",
-            (
-                f"3-Minuten-Angebot an {d['name']} "
-                f"(Runde {round_no})"
-            ),
-            now
-        )
-    )
-
-    c.commit()
-    c.close()
-
-    return {
-        "ok": True,
-        "driver": d["name"],
-        "offer_round": round_no,
-        "offer_timeout_minutes": OFFER_TIMEOUT_MINUTES
-    }, 200
+        c.close(); return {"error": "Kein passender Fahrer verfügbar."}, 409
+    d = candidates[0] if requested_driver_id else min(candidates, key=lambda x: distance_km(x["lat"], x["lng"], 50.1109, 8.6821))
+    now = _utc_now_iso(); round_no = int(order["offer_round"] or 0) + 1
+    c.execute("UPDATE orders SET status=\'OFFERED\', driver_id=?, offer_started_at=?, offer_round=? WHERE id=?", (d["id"], now, round_no, order_id))
+    c.execute("UPDATE drivers SET last_offer_at=? WHERE id=?", (now, d["id"]))
+    c.execute("INSERT INTO events(order_id,status,note,created_at) VALUES(?,?,?,?)", (order_id, "OFFERED", f"3-Minuten-Angebot an {d['name']} (Runde {round_no})", now))
+    c.commit(); c.close()
+    return {"ok": True, "driver": d["name"], "offer_round": round_no, "offer_timeout_minutes": OFFER_TIMEOUT_MINUTES}, 200
 
 
 @app.post("/api/dispatch/<int:order_id>")
@@ -3119,96 +2764,19 @@ def api_dispatch(order_id):
     "driver"
 ])
 def driver():
-
     c = db()
-
-
-    d = c.execute(
-        """
-        SELECT *
-        FROM drivers
-        WHERE user_id=?
-        """,
-        (
-            session[
-                "user_id"
-            ],
-        )
-    ).fetchone()
-
-
+    d = c.execute("SELECT * FROM drivers WHERE user_id=?", (session["user_id"],)).fetchone()
     if not d:
-
-        c.close()
-
-        abort(403)
-
-
+        c.close(); abort(403)
     _expire_stale_offers(c)
-
-    # Only the driver to whom an offer was actually assigned
-    # may see and accept that offer.
-    orders = c.execute(
-        """
-        SELECT *
-        FROM orders
-        WHERE status IN(
-            'OFFERED',
-            'ACCEPTED',
-            'TO_PICKUP',
-            'PICKED_UP',
-            'TO_DESTINATION',
-            'ARRIVED'
-        )
-        AND driver_id=?
-        ORDER BY
-            CASE
-                WHEN status='OFFERED'
-                THEN 0
-                ELSE 1
-            END,
-            id DESC
-        """,
-        (
-            d["id"],
-        )
-    ).fetchall()
-
-    offers = [
-        o for o in orders
-        if o["status"] == "OFFERED"
-    ]
-
-    active = [
-        o for o in orders
-        if o["status"] != "OFFERED"
-    ]
-
-    today_count = c.execute(
-        """
-        SELECT COUNT(*) AS n
-        FROM orders
-        WHERE driver_id=?
-        AND date=?
-        """,
-        (
-            d["id"],
-            datetime.now().strftime("%Y-%m-%d")
-        )
-    ).fetchone()["n"]
-
+    orders = c.execute("SELECT * FROM orders WHERE status IN('OFFERED','ACCEPTED','TO_PICKUP','PICKED_UP','TO_DESTINATION','ARRIVED') AND driver_id=? ORDER BY CASE WHEN status='OFFERED' THEN 0 ELSE 1 END, id DESC", (d["id"],)).fetchall()
+    offers = [o for o in orders if o["status"] == "OFFERED"]
+    active_orders = [o for o in orders if o["status"] != "OFFERED"]
+    active = active_orders[0] if active_orders else None
+    today_count = c.execute("SELECT COUNT(*) AS n FROM orders WHERE driver_id=? AND date=?", (d["id"], datetime.now().strftime("%Y-%m-%d"))).fetchone()["n"]
+    next_status = NEXT_STATUS.get(active["status"]) if active else None
     c.close()
-
-    return render_template(
-        "driver.html",
-        driver=d,
-        orders=orders,
-        offers=offers,
-        active=active,
-        today_count=today_count,
-        next_status=NEXT_STATUS,
-        offer_timeout_minutes=OFFER_TIMEOUT_MINUTES
-    )
+    return render_template("driver.html", driver=d, orders=orders, offers=offers, active=active, today_count=today_count, next_status=next_status, offer_timeout_minutes=OFFER_TIMEOUT_MINUTES)
 
 
 # =========================================================
@@ -3433,15 +3001,8 @@ def driver_status(
 
         abort(403)
 
-
-    expected_status = NEXT_STATUS.get(
-        order["status"]
-    )
-
-    if (
-        expected_status is None
-        or new_status != expected_status
-    ):
+    expected_status = NEXT_STATUS.get(order["status"])
+    if expected_status is None or new_status != expected_status:
         c.close()
         abort(400)
 
@@ -3864,39 +3425,11 @@ def driver_problem(order_id):
     "dispatcher"
 ])
 def alerts():
-
     c = db()
-
     _expire_stale_offers(c)
-
-    rows = c.execute(
-        """
-        SELECT
-            o.id,
-            o.order_no,
-            o.status,
-            o.pickup,
-            o.destination,
-            o.transport_type
-        FROM orders o
-        WHERE o.status IN(
-            'PROBLEM',
-            'NEW'
-        )
-        ORDER BY o.id DESC
-        """
-    ).fetchall()
-
-
+    rows = c.execute("SELECT o.id,o.order_no,o.status,o.pickup,o.destination,o.transport_type FROM orders o WHERE o.status IN('PROBLEM','NEW') ORDER BY o.id DESC").fetchall()
     c.close()
-
-
-    return jsonify(
-        alerts=[
-            dict(r)
-            for r in rows
-        ]
-    )
+    return jsonify(alerts=[dict(r) for r in rows])
 
 
 # =========================================================
@@ -4310,15 +3843,6 @@ def invoice(order_id):
         c.close()
 
 
-    # ---------------------------------------------------------
-    # INVOICE FILE RECOVERY
-    # ---------------------------------------------------------
-    # Render uses an ephemeral filesystem. After a restart/redeploy,
-    # the database record can still contain the old PDF path while
-    # the physical PDF file is gone. In that case regenerate it
-    # automatically instead of returning HTTP 500.
-    # ---------------------------------------------------------
-
     c = db()
 
 
@@ -4339,95 +3863,9 @@ def invoice(order_id):
     c.close()
 
 
-    pdf_missing = (
-        not inv
-        or not inv["pdf_path"]
-        or not os.path.isfile(inv["pdf_path"])
-    )
+    if not inv:
 
-
-    if pdf_missing:
-
-        # Reload the current order before rebuilding the PDF.
-        c = db()
-
-        current_order = c.execute(
-            """
-            SELECT *
-            FROM orders
-            WHERE id=?
-            """,
-            (
-                order_id,
-            )
-        ).fetchone()
-
-        c.close()
-
-
-        if not current_order:
-
-            abort(404)
-
-
-        try:
-
-            make_invoice(
-                current_order
-            )
-
-        except Exception as exc:
-
-            app.logger.exception(
-                "Invoice regeneration failed for order %s",
-                order_id
-            )
-
-            return (
-                jsonify(
-                    error=(
-                        "Rechnung konnte nicht erstellt werden: "
-                        f"{exc}"
-                    )
-                ),
-                500
-            )
-
-
-        # Read the newly generated invoice record.
-        c = db()
-
-        inv = c.execute(
-            """
-            SELECT *
-            FROM invoices
-            WHERE order_id=?
-            ORDER BY id DESC
-            LIMIT 1
-            """,
-            (
-                order_id,
-            )
-        ).fetchone()
-
-        c.close()
-
-
-    if (
-        not inv
-        or not inv["pdf_path"]
-        or not os.path.isfile(inv["pdf_path"])
-    ):
-
-        return (
-            jsonify(
-                error=(
-                    "Die Rechnungs-PDF konnte nicht "
-                    "bereitgestellt werden."
-                )
-            ),
-            500
-        )
+        abort(404)
 
 
     return send_file(
