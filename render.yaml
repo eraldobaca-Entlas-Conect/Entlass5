@@ -2,10 +2,20 @@ services:
   - type: web
     name: entlass-connect-demo
     runtime: python
+
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app
+
+    startCommand: gunicorn --workers 1 --threads 4 --timeout 120 app:app
+
     envVars:
       - key: SECRET_KEY
         generateValue: true
+
       - key: DEMO_MODE
+        value: "true"
+
+      - key: SESSION_COOKIE_SAMESITE
+        value: "Lax"
+
+      - key: SESSION_COOKIE_SECURE
         value: "true"
