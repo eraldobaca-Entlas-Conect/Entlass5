@@ -1,0 +1,668 @@
+
+/* ENTLASS-CONNECT — MOBILE UI STABILITY LAYER
+   Loaded AFTER style.css and design.css.
+   Purpose: normalize touch targets, mobile shell, cards and driver UI
+   without changing backend/business logic or the frozen visual master.
+*/
+
+:root{
+  --ec-touch:48px;
+  --ec-mobile-bg:#f4f8f9;
+  --ec-mobile-card:#ffffff;
+  --ec-mobile-teal:#087f79;
+  --ec-mobile-green:#12a79d;
+  --ec-mobile-red:#d92d20;
+  --ec-mobile-text:#172b4d;
+  --ec-mobile-muted:#667085;
+}
+
+html,body{
+  width:100%;
+  max-width:100%;
+  overflow-x:hidden;
+}
+
+button,
+a.button,
+.button,
+input,
+select,
+textarea{
+  -webkit-tap-highlight-color:transparent;
+}
+
+button,
+a.button,
+.bigbtn,
+.ec-main-btn,
+.ec-permission-btn,
+.ec-nav,
+.ec-quick-item,
+.ec-tab{
+  touch-action:manipulation;
+}
+
+@media (max-width:900px){
+
+  body.authenticated{
+    min-height:100dvh;
+    background:var(--ec-mobile-bg);
+  }
+
+  /* ---------- GLOBAL HEADER ---------- */
+
+  body.authenticated > .top{
+    height:56px;
+    min-height:56px;
+    padding:6px max(10px,env(safe-area-inset-left))
+             6px max(10px,env(safe-area-inset-right));
+  }
+
+  body.authenticated > .top .brand img{
+    width:38px;
+    height:38px;
+  }
+
+  body.authenticated > .top .brand b,
+  body.authenticated > .top .brand strong{
+    font-size:14px;
+  }
+
+  body.authenticated > .top .userbar{
+    gap:6px;
+  }
+
+  body.authenticated > .top .logout{
+    min-width:48px;
+    min-height:44px;
+    padding:8px 10px;
+    font-size:0;
+  }
+
+  body.authenticated > .top .logout::after{
+    content:"↪";
+    font-size:19px;
+    font-weight:900;
+  }
+
+  /* ---------- APPLICATION SHELL ---------- */
+
+  .app-shell{
+    display:block;
+    min-height:calc(100dvh - 56px);
+  }
+
+  .app-sidebar{
+    display:none;
+  }
+
+  .app-main{
+    width:100%;
+    min-width:0;
+  }
+
+  .app-topbar{
+    position:sticky;
+    top:56px;
+    height:52px;
+    min-height:52px;
+    padding:
+      4px max(10px,env(safe-area-inset-right))
+      4px max(10px,env(safe-area-inset-left));
+    z-index:800;
+  }
+
+  .app-topbar .search{
+    flex:1 1 auto;
+    min-width:0;
+    width:auto;
+    min-height:42px;
+    display:flex;
+    align-items:center;
+    padding:8px 11px;
+    font-size:12px;
+  }
+
+  .app-topbar .meta{
+    flex:0 0 auto;
+    gap:5px;
+  }
+
+  .app-topbar .meta > span:not(.avatar){
+    display:none;
+  }
+
+  .app-topbar .avatar{
+    width:38px;
+    height:38px;
+  }
+
+  .ec-global-notification{
+    width:42px;
+    height:42px;
+    border-radius:11px;
+  }
+
+  .ec-global-logout{
+    width:42px;
+    height:42px;
+    min-width:42px;
+    border-radius:11px;
+    display:flex;
+  }
+
+  .app-content{
+    width:100%;
+    max-width:none;
+    padding:
+      10px
+      max(10px,env(safe-area-inset-right))
+      calc(18px + env(safe-area-inset-bottom))
+      max(10px,env(safe-area-inset-left));
+  }
+
+  /* ---------- COMMON PAGE ELEMENTS ---------- */
+
+  .page,
+  .narrow,
+  .track,
+  .order-shell,
+  .driverpage{
+    width:100%;
+    max-width:none;
+    margin:0;
+  }
+
+  .titlebar{
+    gap:9px;
+    margin-bottom:10px;
+  }
+
+  .titlebar h1{
+    font-size:24px;
+    line-height:1.1;
+    margin:3px 0;
+  }
+
+  .titlebar p{
+    font-size:11px;
+    line-height:1.35;
+  }
+
+  .titlebar > .button,
+  .titlebar > a.button{
+    min-height:48px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:auto;
+    white-space:nowrap;
+  }
+
+  .card{
+    padding:13px;
+    border-radius:15px;
+    box-shadow:0 3px 12px rgba(0,0,0,.06);
+  }
+
+  .sectionhead{
+    gap:7px;
+    flex-wrap:wrap;
+  }
+
+  .sectionhead h2{
+    font-size:17px;
+  }
+
+  .tag{
+    font-size:10px;
+    padding:5px 8px;
+  }
+
+  .button,
+  button{
+    min-height:48px;
+    padding:11px 14px;
+    border-radius:11px;
+  }
+
+  /* ---------- DASHBOARD ---------- */
+
+  .stats{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:7px;
+    margin-bottom:10px;
+  }
+
+  .stats > div{
+    min-height:76px;
+    padding:11px;
+    border-radius:13px;
+  }
+
+  .stats b{
+    font-size:23px;
+  }
+
+  .stats span{
+    font-size:10px;
+  }
+
+  .grid2{
+    grid-template-columns:1fr;
+    gap:10px;
+  }
+
+  .tablewrap{
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+
+  table{
+    min-width:620px;
+    font-size:11px;
+  }
+
+  th,td{
+    padding:9px 7px;
+  }
+
+  .driverrow{
+    grid-template-columns:10px minmax(0,1fr) 78px;
+    gap:6px;
+    font-size:11px;
+  }
+
+  .rank{
+    grid-template-columns:minmax(0,1fr) 52px;
+    gap:7px;
+  }
+
+  .rank button{
+    grid-column:1/-1;
+    width:100%;
+  }
+
+  /* ---------- NEW ORDER ---------- */
+
+  body:has(.order-shell){
+    overflow-x:hidden;
+  }
+
+  .order-shell{
+    padding:9px 8px calc(10px + env(safe-area-inset-bottom));
+    min-height:calc(100dvh - 108px);
+  }
+
+  .order-head{
+    align-items:center;
+    margin-bottom:8px;
+  }
+
+  .order-head h1{
+    font-size:22px;
+  }
+
+  .order-wizard{
+    width:100%;
+    height:auto;
+    min-height:0;
+    padding:11px;
+    border-radius:15px;
+    overflow:visible;
+  }
+
+  .wizardbar{
+    gap:4px;
+    margin-bottom:10px;
+  }
+
+  .wstep{
+    min-height:42px;
+    padding:6px;
+    border-radius:9px;
+  }
+
+  .wstep i{
+    width:23px;
+    height:23px;
+    font-size:10px;
+  }
+
+  .wstep b{
+    font-size:9px;
+  }
+
+  .wizard-step{
+    min-height:0;
+  }
+
+  .step-title{
+    gap:7px;
+    margin-bottom:8px;
+  }
+
+  .step-title h2{
+    font-size:18px;
+  }
+
+  .step-title p{
+    font-size:10px;
+  }
+
+  .quickgrid{
+    grid-template-columns:1fr;
+    gap:6px;
+  }
+
+  .wizard-step label{
+    font-size:11px;
+    margin:5px 0;
+  }
+
+  .quickgrid input,
+  .quickgrid select,
+  .wizard-step textarea,
+  .demo-distance input{
+    min-height:46px;
+    padding:10px;
+    font-size:16px; /* prevents iOS Safari zoom */
+    border-radius:9px;
+  }
+
+  .segmented,
+  .transport-choices,
+  .reason-grid{
+    gap:5px;
+  }
+
+  .segmented span{
+    min-height:46px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:8px 4px;
+  }
+
+  .transport-choices label,
+  .reason-grid label{
+    min-height:48px;
+  }
+
+  .wizard-actions{
+    position:sticky;
+    bottom:0;
+    z-index:20;
+    margin:8px -11px -11px;
+    padding:8px 11px max(8px,env(safe-area-inset-bottom));
+    background:rgba(255,255,255,.97);
+    backdrop-filter:blur(10px);
+  }
+
+  .wizard-actions button{
+    width:50%;
+    min-height:48px;
+  }
+
+  /* ---------- DRIVER ---------- */
+
+  .driverpage{
+    padding:
+      7px
+      max(7px,env(safe-area-inset-right))
+      calc(9px + env(safe-area-inset-bottom))
+      max(7px,env(safe-area-inset-left));
+    min-height:calc(100dvh - 108px);
+    gap:7px;
+  }
+
+  .ec-app-head{
+    min-height:56px;
+    padding:7px;
+    border-radius:14px;
+  }
+
+  .ec-brand img{
+    width:40px;
+    height:40px;
+  }
+
+  .ec-brand-title{
+    font-size:15px;
+  }
+
+  .ec-user{
+    gap:4px;
+  }
+
+  .ec-bell,
+  .ec-mobile-logout{
+    width:44px;
+    height:44px;
+    min-width:44px;
+    border-radius:11px;
+  }
+
+  .ec-avatar{
+    width:38px;
+    height:38px;
+  }
+
+  .ec-availability{
+    min-height:56px;
+    padding:8px 10px;
+    border-radius:13px;
+  }
+
+  .ec-switch{
+    width:56px;
+    height:32px;
+  }
+
+  .ec-switch-knob{
+    width:26px;
+    height:26px;
+  }
+
+  .ec-switch.on .ec-switch-knob{
+    transform:translateX(24px);
+  }
+
+  .ec-stats{
+    gap:5px;
+  }
+
+  .ec-stat{
+    min-height:62px;
+    padding:7px 3px;
+  }
+
+  .ec-stat b{
+    font-size:20px;
+  }
+
+  .ec-page-title h1{
+    font-size:20px;
+  }
+
+  .ec-tabs{
+    gap:4px;
+  }
+
+  .ec-tab{
+    min-height:44px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:7px 4px;
+    font-size:11px;
+  }
+
+  .ec-active,
+  .ec-orders-card,
+  .ec-quick{
+    border-radius:14px;
+  }
+
+  .ec-active{
+    padding:10px;
+  }
+
+  .ec-active h2{
+    font-size:17px;
+  }
+
+  .ec-route-grid{
+    gap:5px;
+  }
+
+  .ec-route-box{
+    min-height:58px;
+    padding:7px;
+  }
+
+  .ec-route-box b{
+    font-size:11px;
+  }
+
+  .ec-main-btn{
+    min-height:50px;
+    margin-top:7px;
+    font-size:13px;
+    border-radius:10px;
+  }
+
+  .ec-problem{
+    min-height:48px;
+    font-size:14px;
+  }
+
+  .ec-offers{
+    max-height:none;
+    overflow:visible;
+  }
+
+  .ec-offer{
+    padding:10px;
+    margin-bottom:7px;
+    border-radius:12px;
+  }
+
+  .ec-offer h3{
+    font-size:14px;
+  }
+
+  .ec-offer-meta{
+    gap:4px;
+  }
+
+  .ec-offer-meta span{
+    min-height:42px;
+    display:flex;
+    align-items:center;
+    font-size:9px;
+  }
+
+  .ec-quick-grid{
+    grid-template-columns:repeat(4,1fr);
+    gap:4px;
+  }
+
+  .ec-quick-item{
+    min-height:58px;
+    font-size:8px;
+  }
+
+  .ec-permission-btn{
+    min-height:48px;
+  }
+
+  .ec-status-item{
+    min-height:50px;
+    padding:7px 3px;
+  }
+
+  .ec-bottom-nav{
+    position:sticky;
+    bottom:0;
+    z-index:50;
+    min-height:58px;
+    margin-top:0;
+    padding:5px 4px max(5px,env(safe-area-inset-bottom));
+    border-radius:13px;
+  }
+
+  .ec-nav{
+    min-height:48px;
+    font-size:8px;
+  }
+
+  .ec-nav .icon{
+    font-size:17px;
+  }
+
+  /* ---------- TRACKING ---------- */
+
+  .track{
+    padding:14px 8px calc(20px + env(safe-area-inset-bottom));
+  }
+
+  .track .card{
+    padding:13px;
+  }
+
+  .brandcenter{
+    margin-bottom:14px;
+  }
+
+  .brandcenter img{
+    width:52px;
+    height:52px;
+  }
+
+  .brandcenter b,
+  .brandcenter strong{
+    font-size:20px;
+  }
+
+  .track h1{
+    font-size:24px;
+  }
+}
+
+/* Very small phones */
+@media(max-width:390px){
+  .app-content{
+    padding-left:7px;
+    padding-right:7px;
+  }
+
+  .stats > div{
+    min-height:70px;
+    padding:9px;
+  }
+
+  .stats b{
+    font-size:21px;
+  }
+
+  .ec-quick-item{
+    min-height:54px;
+  }
+
+  .ec-brand-sub{
+    display:none;
+  }
+}
+
+/* Landscape phones: keep controls usable */
+@media(max-width:900px) and (orientation:landscape){
+  .app-topbar{
+    position:relative;
+    top:0;
+  }
+
+  .driverpage{
+    min-height:auto;
+  }
+}
